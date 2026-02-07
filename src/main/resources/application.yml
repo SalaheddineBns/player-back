@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  application:
+    name: mcp-players-service
+  main:
+    web-application-type: servlet
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: players-mcp-servers
+        type: sync
+        version: 1.0.0
+  h2:
+    console:
+      enabled: true
+#logging:
+#  level:
+#    root: off
+
+jwt:
+  secret: ZmFrZVNlY3JldEtleUZvckRldmVsb3BtZW50T25seURvTm90VXNlSW5Qcm9k
+  expiration: 86400000
