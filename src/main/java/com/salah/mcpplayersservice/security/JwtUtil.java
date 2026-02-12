@@ -1,5 +1,6 @@
 package com.salah.mcpplayersservice.security;
 
+import com.salah.mcpplayersservice.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,9 +26,11 @@ public class JwtUtil {
 		return Keys.hmacShaKeyFor(secret.getBytes());
 	}
 
-	public String generateToken(UserDetails userDetails) {
+	public String generateToken(User user) {
 		return Jwts.builder()
-			.setSubject(userDetails.getUsername())
+			.setSubject(user.getUsername())
+			.claim("role", user.getRole().name())
+			.claim("userId", user.getUserId().toString())
 			.setIssuedAt(new Date())
 			.setExpiration(new Date(System.currentTimeMillis() + expiration))
 			.signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -36,6 +39,10 @@ public class JwtUtil {
 
 	public String extractUsername(String token) {
 		return extractClaim(token, Claims::getSubject);
+	}
+
+	public String extractRole(String token) {
+		return extractClaim(token, claims -> claims.get("role", String.class));
 	}
 
 	public boolean isTokenValid(String token, UserDetails userDetails) {

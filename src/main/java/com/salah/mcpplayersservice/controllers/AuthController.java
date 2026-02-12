@@ -6,7 +6,7 @@ import com.salah.mcpplayersservice.dto.response.AuthResponseDto;
 import com.salah.mcpplayersservice.dto.response.ErrorResponseDto;
 import com.salah.mcpplayersservice.dto.response.PlayerResponseDto;
 import com.salah.mcpplayersservice.mappers.PlayerMapper;
-import com.salah.mcpplayersservice.models.Player;
+import com.salah.mcpplayersservice.models.User;
 import com.salah.mcpplayersservice.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@Tag(name = "Authentication", description = "Player signup and login endpoints")
+@Tag(name = "Authentication", description = "User signup and login endpoints")
 public class AuthController {
 
 	private final AuthService authService;
@@ -36,20 +36,20 @@ public class AuthController {
 	}
 
 	@Operation(summary = "Register a new player",
-			description = "Creates a new player account with the provided details")
+			description = "Creates a new user account with PLAYER role and linked player profile")
 	@ApiResponse(responseCode = "201", description = "Player registered successfully",
 			content = @Content(schema = @Schema(implementation = PlayerResponseDto.class)))
-	@ApiResponse(responseCode = "409", description = "Email already exists",
+	@ApiResponse(responseCode = "409", description = "Email or username already exists",
 			content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
 	@ApiResponse(responseCode = "400", description = "Validation error",
 			content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
 	@PostMapping("/signup")
 	public ResponseEntity<PlayerResponseDto> signup(@Valid @RequestBody SignupRequest request) {
-		Player player = authService.signup(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(player));
+		User user = authService.signup(request);
+		return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(user.getPlayer()));
 	}
 
-	@Operation(summary = "Login", description = "Authenticates a player and returns a JWT token")
+	@Operation(summary = "Login", description = "Authenticates a user and returns a JWT token with role")
 	@ApiResponse(responseCode = "200", description = "Login successful",
 			content = @Content(schema = @Schema(implementation = AuthResponseDto.class)))
 	@ApiResponse(responseCode = "401", description = "Invalid credentials",

@@ -9,5 +9,6 @@ public record SignupRequest(@NotBlank(message = "First name cannot be empty") St
 		@NotBlank(message = "Username cannot be empty") String userName,
 		@NotBlank(message = "Email cannot be empty") @Email(message = "Email must be valid") String email,
 		@NotBlank(message = "Password cannot be empty") @Size(min = 6,
-				message = "Password must be at least 6 characters") String password) {
+				message = "Password must be at least 6 characters") String password,
+		String gender) {
 }

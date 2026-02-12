@@ -25,6 +25,13 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(error, HttpStatus.CONFLICT);
 	}
 
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponseDto> handleUserAlreadyExists(UserAlreadyExistsException ex) {
+		ErrorResponseDto error = new ErrorResponseDto(HttpStatus.CONFLICT.value(), ex.getMessage(),
+				System.currentTimeMillis());
+		return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+	}
+
 	@ExceptionHandler(BadCredentialsException.class)
 	public ResponseEntity<ErrorResponseDto> handleBadCredentials(BadCredentialsException ex) {
 		ErrorResponseDto error = new ErrorResponseDto(HttpStatus.UNAUTHORIZED.value(), "Invalid email or password",

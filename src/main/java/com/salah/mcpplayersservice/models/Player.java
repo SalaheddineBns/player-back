@@ -1,19 +1,10 @@
 package com.salah.mcpplayersservice.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.UUID;
 
 @Entity
@@ -22,46 +13,31 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Player implements UserDetails {
+public class Player {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@UuidGenerator
-	UUID playerId;
+	private UUID playerId;
 
 	@NotBlank(message = "First name cannot be empty")
-	String firstName;
+	private String firstName;
 
 	@NotBlank(message = "Last name cannot be empty")
-	String lastName;
+	private String lastName;
 
-	@NotBlank(message = "Username cannot be empty")
-	@Column(unique = true)
-	String userName;
+	private String position;
 
-	@NotBlank(message = "Email cannot be empty")
-	@Email(message = "Email must be valid")
-	@Column(unique = true)
-	String email;
+	private String nationality;
 
-	@NotBlank(message = "Password cannot be empty")
-	String password;
-
-	String position;
-
-	String nationality;
+	private String gender;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	Team team;
+	private Team team;
 
-	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return Collections.singleton(new SimpleGrantedAuthority("PLAYER"));
-	}
-
-	@Override
-	public String getUsername() {
-		return this.userName;
-	}
+	@OneToOne(mappedBy = "player", fetch = FetchType.LAZY)
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private User user;
 
 }
