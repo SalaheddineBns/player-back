@@ -50,13 +50,27 @@ public class JwtUtil {
 		return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
 	}
 
+	public boolean isTokenValid(String token) {
+		try {
+			extractAllClaims(token);
+			return !isTokenExpired(token);
+		}
+		catch (Exception ex) {
+			return false;
+		}
+	}
+
 	private boolean isTokenExpired(String token) {
 		return extractClaim(token, Claims::getExpiration).before(new Date());
 	}
 
 	private <T> T extractClaim(String token, Function<Claims, T> resolver) {
-		Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
+		Claims claims = extractAllClaims(token);
 		return resolver.apply(claims);
+	}
+
+	private Claims extractAllClaims(String token) {
+		return Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token).getBody();
 	}
 
 }

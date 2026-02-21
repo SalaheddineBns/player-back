@@ -1,9 +1,21 @@
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 300MB
+      max-request-size: 300MB
   datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/playersdb
+    username: salah
+    password: salah123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   application:
     name: mcp-players-service
   main:
@@ -15,12 +27,9 @@ spring:
         name: players-mcp-servers
         type: sync
         version: 1.0.0
-  h2:
-    console:
-      enabled: true
-#logging:
-#  level:
-#    root: off
+
+media:
+  upload-dir: uploads
 
 jwt:
   secret: ZmFrZVNlY3JldEtleUZvckRldmVsb3BtZW50T25seURvTm90VXNlSW5Qcm9k

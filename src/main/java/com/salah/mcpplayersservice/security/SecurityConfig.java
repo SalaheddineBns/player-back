@@ -44,11 +44,10 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(csrf -> csrf.disable())
-			.headers(headers -> headers.frameOptions(frame -> frame.disable()))
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html",
-						"/h2-console/**")
+				.requestMatchers("/api/auth/**", "/api/media/*/file", "/api/teams/*/logo", "/swagger-ui/**",
+						"/v3/api-docs/**", "/swagger-ui.html")
 				.permitAll()
 				.anyRequest()
 				.authenticated())

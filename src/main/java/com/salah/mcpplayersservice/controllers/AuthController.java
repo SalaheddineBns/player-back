@@ -46,7 +46,7 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<PlayerResponseDto> signup(@Valid @RequestBody SignupRequest request) {
 		User user = authService.signup(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(user.getPlayer()));
+		return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(user.getPlayer(), user));
 	}
 
 	@Operation(summary = "Login", description = "Authenticates a user and returns a JWT token with role")

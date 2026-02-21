@@ -60,4 +60,8 @@ public class User implements UserDetails {
 		return this.userName;
 	}
 
+	public Team getTeam() {
+		return player != null ? player.getTeam() : null;
+	}
+
 }

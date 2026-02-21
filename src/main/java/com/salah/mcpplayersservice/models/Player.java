@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -32,8 +34,20 @@ public class Player {
 
 	private String gender;
 
+	private String preferredLeg;
+
+	private Integer preferredNumber;
+
+	private String profilePictureUrl;
+
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "team_id")
 	private Team team;
+
+	@OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private List<Media> mediaItems = new ArrayList<>();
 
 	@OneToOne(mappedBy = "player", fetch = FetchType.LAZY)
 	@ToString.Exclude
