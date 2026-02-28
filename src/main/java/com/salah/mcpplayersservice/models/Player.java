@@ -32,11 +32,18 @@ public class Player {
 
 	private String nationality;
 
+	private String city;
+
 	private String gender;
 
 	private String preferredLeg;
 
 	private Integer preferredNumber;
+
+	@Enumerated(EnumType.STRING)
+	@Column(columnDefinition = "varchar(255) default 'AVAILABLE'")
+	@Builder.Default
+	private PlayerStatus status = PlayerStatus.AVAILABLE;
 
 	private String profilePictureUrl;
 

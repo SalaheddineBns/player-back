@@ -63,4 +63,11 @@ public class Team {
 	@EqualsAndHashCode.Exclude
 	private List<RecruitmentNeed> recruitmentNeeds = new ArrayList<>();
 
+	@NotNull(message = "Team must have an owner user")
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
+	private User user;
+
 }

@@ -91,18 +91,10 @@ public class AuthService {
 			throw new IllegalArgumentException("Team name is required for team manager signup");
 		}
 
-		Team team = new Team();
-		team.setTeamName(teamName);
-		team.setCoach(request.firstName() + " " + request.lastName());
-		team.setDivision(request.division());
-		team.setDateCreated(new Date());
-		team = teamRepository.save(team);
-
 		Player player = Player.builder()
 			.firstName(request.firstName())
 			.lastName(request.lastName())
 			.gender(request.gender())
-			.team(team)
 			.build();
 		player = playerRepository.save(player);
 
@@ -116,6 +108,17 @@ public class AuthService {
 		user = userRepository.save(user);
 
 		player.setUser(user);
+
+		Team team = new Team();
+		team.setTeamName(teamName);
+		team.setCoach(request.firstName() + " " + request.lastName());
+		team.setDivision(request.division());
+		team.setDateCreated(new Date());
+		team.setUser(user);
+		team = teamRepository.save(team);
+
+		player.setTeam(team);
+		playerRepository.save(player);
 
 		return user;
 	}
