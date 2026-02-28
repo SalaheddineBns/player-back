@@ -33,6 +33,7 @@ public interface PlayerMapper {
 	PlayerResponseDto toPlayerResponseDto(Player player, User user);
 
 	@Mapping(source = "player.playerId", target = "playerId")
+	@Mapping(source = "user.userId", target = "userId")
 	@Mapping(source = "player.firstName", target = "firstName")
 	@Mapping(source = "player.lastName", target = "lastName")
 	@Mapping(source = "player.position", target = "position")

@@ -18,9 +18,9 @@ public interface PlayerRepository extends JpaRepository<Player, UUID> {
 	List<Player> findByStatus(PlayerStatus status);
 
 	@Query("SELECT p FROM Player p WHERE p.status = :status "
-			+ "AND (:position IS NULL OR LOWER(p.position) LIKE LOWER(CONCAT('%', :position, '%'))) "
-			+ "AND (:nationality IS NULL OR LOWER(p.nationality) LIKE LOWER(CONCAT('%', :nationality, '%'))) "
-			+ "AND (:city IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', :city, '%')))")
+			+ "AND (CAST(:position AS String) IS NULL OR LOWER(p.position) LIKE LOWER(CONCAT('%', CAST(:position AS String), '%'))) "
+			+ "AND (CAST(:nationality AS String) IS NULL OR LOWER(p.nationality) LIKE LOWER(CONCAT('%', CAST(:nationality AS String), '%'))) "
+			+ "AND (CAST(:city AS String) IS NULL OR LOWER(p.city) LIKE LOWER(CONCAT('%', CAST(:city AS String), '%')))")
 	Page<Player> searchByStatusWithFilters(@Param("status") PlayerStatus status, @Param("position") String position,
 			@Param("nationality") String nationality, @Param("city") String city, Pageable pageable);
 

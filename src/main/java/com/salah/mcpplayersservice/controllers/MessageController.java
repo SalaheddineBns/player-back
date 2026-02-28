@@ -10,6 +10,7 @@ import com.salah.mcpplayersservice.services.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/messages")
 @Tag(name = "Messages", description = "Messaging endpoints")
@@ -69,6 +71,7 @@ public class MessageController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
+		log.info("Sending message from {} to {}", user.getUsername(), request.receiverId());
 		Message msg = messageService.sendMessage(user, request.receiverId(), request.content());
 		MessageResponseDto dto = messageService.toMessageResponseDto(msg);
 

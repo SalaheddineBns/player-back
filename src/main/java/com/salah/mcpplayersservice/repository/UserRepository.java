@@ -14,6 +14,9 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 	@Query("SELECT u FROM User u LEFT JOIN FETCH u.player p LEFT JOIN FETCH p.team WHERE u.userName = :userName")
 	Optional<User> findByUserNameWithPlayer(String userName);
 
+	@Query("SELECT u FROM User u WHERE u.player.playerId = :playerId")
+	Optional<User> findByPlayerId(@org.springframework.data.repository.query.Param("playerId") java.util.UUID playerId);
+
 	Optional<User> findByEmail(String email);
 
 	boolean existsByEmail(String email);
