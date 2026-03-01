@@ -131,7 +131,8 @@ public class TeamController {
 
 	@Operation(summary = "Update team profile", description = "Updates the current user's team profile")
 	@PutMapping("/me")
-	public ResponseEntity<?> updateTeamProfile(Authentication authentication, @Valid @RequestBody TeamUpdateRequest request) {
+	public ResponseEntity<?> updateTeamProfile(Authentication authentication,
+			@Valid @RequestBody TeamUpdateRequest request) {
 		User user = resolveUser(authentication);
 		if (user == null) {
 			return ResponseEntity.status(401).build();

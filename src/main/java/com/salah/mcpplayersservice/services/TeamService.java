@@ -120,15 +120,12 @@ public class TeamService {
 	}
 
 	public List<SubscriberResponseDto> getSubscribers(Team team) {
-		return teamSubscriptionRepository.findByTeam(team)
-			.stream()
-			.map(sub -> {
-				var p = sub.getPlayer();
-				return new SubscriberResponseDto(p.getPlayerId(), p.getFirstName(), p.getLastName(), p.getPosition(),
-						p.getNationality(), p.getCity(), p.getProfilePictureUrl(),
-						p.getStatus() != null ? p.getStatus().name() : null, sub.getSubscribedAt());
-			})
-			.toList();
+		return teamSubscriptionRepository.findByTeam(team).stream().map(sub -> {
+			var p = sub.getPlayer();
+			return new SubscriberResponseDto(p.getPlayerId(), p.getFirstName(), p.getLastName(), p.getPosition(),
+					p.getNationality(), p.getCity(), p.getProfilePictureUrl(),
+					p.getStatus() != null ? p.getStatus().name() : null, sub.getSubscribedAt());
+		}).toList();
 	}
 
 	public TeamPageResponseDto updateTeamProfile(Team team, TeamUpdateRequest request) {
