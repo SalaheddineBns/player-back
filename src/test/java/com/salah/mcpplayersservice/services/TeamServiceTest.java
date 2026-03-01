@@ -52,13 +52,13 @@ class TeamServiceTest {
 		team.setCoach("Coach");
 		team.setDateCreated(new Date());
 
-		TeamOptionResponseDto dto = new TeamOptionResponseDto(team.getTeamId(), "Barcelona FC", null);
+		TeamOptionResponseDto dto = new TeamOptionResponseDto(team.getTeamId(), "Barcelona FC", null, null, null);
 
 		Page<Team> teamPage = new PageImpl<>(List.of(team), PageRequest.of(0, 10), 1);
-		when(teamRepository.findByTeamNameContainingIgnoreCase(eq("bar"), any(Pageable.class))).thenReturn(teamPage);
+		when(teamRepository.searchTeams(eq("bar"), any(), any(), any(Pageable.class))).thenReturn(teamPage);
 		when(teamMapper.toTeamOptionResponseDto(team)).thenReturn(dto);
 
-		Page<TeamOptionResponseDto> result = teamService.searchTeams("bar", 0, 10);
+		Page<TeamOptionResponseDto> result = teamService.searchTeams("bar", null, null, 0, 10);
 
 		assertThat(result.getContent()).hasSize(1);
 		assertThat(result.getContent().get(0).teamName()).isEqualTo("Barcelona FC");
@@ -68,9 +68,9 @@ class TeamServiceTest {
 	@Test
 	void searchTeams_withNoMatch_returnsEmptyPage() {
 		Page<Team> emptyPage = new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 10), 0);
-		when(teamRepository.findByTeamNameContainingIgnoreCase(eq("xyz"), any(Pageable.class))).thenReturn(emptyPage);
+		when(teamRepository.searchTeams(eq("xyz"), any(), any(), any(Pageable.class))).thenReturn(emptyPage);
 
-		Page<TeamOptionResponseDto> result = teamService.searchTeams("xyz", 0, 10);
+		Page<TeamOptionResponseDto> result = teamService.searchTeams("xyz", null, null, 0, 10);
 
 		assertThat(result.getContent()).isEmpty();
 		assertThat(result.getTotalElements()).isEqualTo(0);
@@ -84,13 +84,13 @@ class TeamServiceTest {
 		team.setCoach("Coach A");
 		team.setDateCreated(new Date());
 
-		TeamOptionResponseDto dto = new TeamOptionResponseDto(team.getTeamId(), "Team A", null);
+		TeamOptionResponseDto dto = new TeamOptionResponseDto(team.getTeamId(), "Team A", null, null, null);
 
 		Page<Team> teamPage = new PageImpl<>(List.of(team), PageRequest.of(1, 5), 6);
-		when(teamRepository.findByTeamNameContainingIgnoreCase(eq("team"), any(Pageable.class))).thenReturn(teamPage);
+		when(teamRepository.searchTeams(eq("team"), any(), any(), any(Pageable.class))).thenReturn(teamPage);
 		when(teamMapper.toTeamOptionResponseDto(team)).thenReturn(dto);
 
-		Page<TeamOptionResponseDto> result = teamService.searchTeams("team", 1, 5);
+		Page<TeamOptionResponseDto> result = teamService.searchTeams("team", null, null, 1, 5);
 
 		assertThat(result.getContent()).hasSize(1);
 		assertThat(result.getNumber()).isEqualTo(1);

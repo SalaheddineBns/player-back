@@ -3,6 +3,7 @@ package com.salah.mcpplayersservice.services;
 import com.salah.mcpplayersservice.dto.request.TrialRequest;
 import com.salah.mcpplayersservice.exceptions.RessourceNotFoundException;
 import com.salah.mcpplayersservice.models.*;
+import com.salah.mcpplayersservice.notification.NotificationService;
 import com.salah.mcpplayersservice.repository.TrialCandidateRepository;
 import com.salah.mcpplayersservice.repository.TrialRepository;
 import org.springframework.stereotype.Service;
@@ -18,9 +19,13 @@ public class TrialService {
 
 	private final TrialCandidateRepository trialCandidateRepository;
 
-	public TrialService(TrialRepository trialRepository, TrialCandidateRepository trialCandidateRepository) {
+	private final NotificationService notificationService;
+
+	public TrialService(TrialRepository trialRepository, TrialCandidateRepository trialCandidateRepository,
+			NotificationService notificationService) {
 		this.trialRepository = trialRepository;
 		this.trialCandidateRepository = trialCandidateRepository;
+		this.notificationService = notificationService;
 	}
 
 	@Transactional
@@ -77,7 +82,16 @@ public class TrialService {
 		candidate.setTrial(trial);
 		candidate.setPlayer(player);
 		candidate.setStatus(TrialApplicationStatus.PENDING);
-		return trialCandidateRepository.save(candidate);
+		TrialCandidate saved = trialCandidateRepository.save(candidate);
+
+		User manager = trial.getTeam().getUser();
+		if (manager != null) {
+			String playerName = player.getFirstName() + " " + player.getLastName();
+			notificationService.createNotification(manager, playerName, trial.getLocation(), trial.getTrialDate(),
+					trial.getTrialId().toString());
+		}
+
+		return saved;
 	}
 
 	@Transactional
