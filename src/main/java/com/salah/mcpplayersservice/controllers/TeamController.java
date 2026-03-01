@@ -17,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,13 +59,15 @@ public class TeamController {
 		return ResponseEntity.ok(teamService.getTeamPage(teamId));
 	}
 
-	@Operation(summary = "Search teams", description = "Search teams by name with pagination")
+	@Operation(summary = "Search teams", description = "Search teams by name, city, and country with pagination")
 	@GetMapping("/search")
 	public ResponseEntity<Page<TeamOptionResponseDto>> searchTeams(
 			@RequestParam(value = "q", defaultValue = "") String query,
+			@RequestParam(value = "city", defaultValue = "") String city,
+			@RequestParam(value = "country", defaultValue = "") String country,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "10") int size) {
-		return ResponseEntity.ok(teamService.searchTeams(query, page, size));
+		return ResponseEntity.ok(teamService.searchTeams(query, city, country, page, size));
 	}
 
 	@Operation(summary = "Subscribe to a team", description = "Subscribes the current player to a team")
@@ -128,7 +131,7 @@ public class TeamController {
 
 	@Operation(summary = "Update team profile", description = "Updates the current user's team profile")
 	@PutMapping("/me")
-	public ResponseEntity<?> updateTeamProfile(Authentication authentication, @RequestBody TeamUpdateRequest request) {
+	public ResponseEntity<?> updateTeamProfile(Authentication authentication, @Valid @RequestBody TeamUpdateRequest request) {
 		User user = resolveUser(authentication);
 		if (user == null) {
 			return ResponseEntity.status(401).build();

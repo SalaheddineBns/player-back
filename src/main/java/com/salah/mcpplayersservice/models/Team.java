@@ -45,6 +45,14 @@ public class Team {
 
 	private String division;
 
+	@NotBlank(message = "City cannot be empty")
+	@Column(nullable = false)
+	private String city;
+
+	@NotBlank(message = "Country cannot be empty")
+	@Column(nullable = false)
+	private String country;
+
 	@Column(columnDefinition = "TEXT")
 	private String description;
 

@@ -78,9 +78,12 @@ public class TeamService {
 		return teamMapper.toTeamOptionResponseDtos(teams);
 	}
 
-	public Page<TeamOptionResponseDto> searchTeams(String keyword, int page, int size) {
+	public Page<TeamOptionResponseDto> searchTeams(String keyword, String city, String country, int page, int size) {
 		PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "teamName"));
-		Page<Team> teams = teamRepository.findByTeamNameContainingIgnoreCase(keyword, pageRequest);
+		String keywordParam = (keyword == null || keyword.isBlank()) ? "" : keyword;
+		String cityParam = (city == null || city.isBlank()) ? "" : city;
+		String countryParam = (country == null || country.isBlank()) ? "" : country;
+		Page<Team> teams = teamRepository.searchTeams(keywordParam, cityParam, countryParam, pageRequest);
 		return teams.map(teamMapper::toTeamOptionResponseDto);
 	}
 
@@ -138,6 +141,12 @@ public class TeamService {
 		if (request.division() != null) {
 			team.setDivision(request.division());
 		}
+		if (request.city() != null) {
+			team.setCity(request.city());
+		}
+		if (request.country() != null) {
+			team.setCountry(request.country());
+		}
 		team = teamRepository.save(team);
 		return getTeamPage(team.getTeamId());
 	}
@@ -154,8 +163,8 @@ public class TeamService {
 			.toList();
 		int playerCount = team.getPlayers() != null ? team.getPlayers().size() : 0;
 		return new TeamPageResponseDto(team.getTeamId(), team.getTeamName(), team.getDescription(), team.getDivision(),
-				team.getCoach(), team.getDateCreated(), team.getLogoUrl(), playerCount, publicationDtos,
-				recruitmentDtos);
+				team.getCoach(), team.getDateCreated(), team.getLogoUrl(), team.getCity(), team.getCountry(),
+				playerCount, publicationDtos, recruitmentDtos);
 	}
 
 }
