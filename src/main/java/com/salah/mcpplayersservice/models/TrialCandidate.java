@@ -29,14 +29,22 @@ public class TrialCandidate {
 	private Player player;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, columnDefinition = "VARCHAR(50)")
 	private TrialApplicationStatus status = TrialApplicationStatus.PENDING;
 
 	private LocalDateTime appliedAt;
 
+	private LocalDateTime statusUpdatedAt;
+
 	@PrePersist
 	protected void onCreate() {
 		this.appliedAt = LocalDateTime.now();
+		this.statusUpdatedAt = LocalDateTime.now();
+	}
+
+	@PreUpdate
+	protected void onUpdate() {
+		this.statusUpdatedAt = LocalDateTime.now();
 	}
 
 }

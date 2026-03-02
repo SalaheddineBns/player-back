@@ -1,6 +1,8 @@
 package com.salah.mcpplayersservice.controllers;
 
+import com.salah.mcpplayersservice.dto.request.StatusUpdateRequest;
 import com.salah.mcpplayersservice.dto.request.TrialRequest;
+import com.salah.mcpplayersservice.dto.response.PlayerApplicationSummaryDto;
 import com.salah.mcpplayersservice.dto.response.TrialCandidateResponseDto;
 import com.salah.mcpplayersservice.dto.response.TrialResponseDto;
 import com.salah.mcpplayersservice.models.Trial;
@@ -52,6 +54,13 @@ public class TrialController {
 		return ResponseEntity.ok(trialService.getMyTrials(user).stream().map(this::toDto).toList());
 	}
 
+	@Operation(summary = "Get a single trial by ID")
+	@GetMapping("/{id}")
+	public ResponseEntity<TrialResponseDto> getTrialById(@PathVariable UUID id) {
+		Trial trial = trialService.getTrialById(id);
+		return ResponseEntity.ok(toDto(trial));
+	}
+
 	@Operation(summary = "Delete a trial")
 	@DeleteMapping("/{id}")
 	@PreAuthorize("hasRole('TEAM_MANAGER')")
@@ -84,11 +93,21 @@ public class TrialController {
 		return ResponseEntity.ok(trialService.getCandidates(id, user).stream().map(this::toCandidateDto).toList());
 	}
 
-	@Operation(summary = "Get applied trial IDs", description = "Player gets all trial IDs they applied to")
+	@Operation(summary = "Accept, reject or update a trial candidate's status")
+	@PatchMapping("/{trialId}/candidates/{candidateId}/status")
+	@PreAuthorize("hasRole('TEAM_MANAGER')")
+	public ResponseEntity<TrialCandidateResponseDto> updateCandidateStatus(@PathVariable UUID trialId,
+			@PathVariable UUID candidateId, @RequestBody @Valid StatusUpdateRequest request,
+			@AuthenticationPrincipal User user) {
+		return ResponseEntity
+			.ok(toCandidateDto(trialService.updateCandidateStatus(trialId, candidateId, request.status(), user)));
+	}
+
+	@Operation(summary = "Get player's applications with current statuses")
 	@GetMapping("/my-applications")
 	@PreAuthorize("hasRole('PLAYER')")
-	public ResponseEntity<List<UUID>> getMyApplications(@AuthenticationPrincipal User user) {
-		return ResponseEntity.ok(trialService.getAppliedTrialIds(user));
+	public ResponseEntity<List<PlayerApplicationSummaryDto>> getMyApplications(@AuthenticationPrincipal User user) {
+		return ResponseEntity.ok(trialService.getMyApplications(user));
 	}
 
 	private TrialResponseDto toDto(Trial trial) {
@@ -100,7 +119,7 @@ public class TrialController {
 	private TrialCandidateResponseDto toCandidateDto(TrialCandidate c) {
 		return new TrialCandidateResponseDto(c.getCandidateId(), c.getPlayer().getPlayerId(),
 				c.getPlayer().getFirstName(), c.getPlayer().getLastName(), c.getPlayer().getPosition(), c.getStatus(),
-				c.getAppliedAt());
+				c.getAppliedAt(), c.getStatusUpdatedAt());
 	}
 
 }

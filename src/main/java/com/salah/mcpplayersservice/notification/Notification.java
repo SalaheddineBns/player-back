@@ -33,6 +33,13 @@ public class Notification {
 
 	private String trialId;
 
+	/** For STATUS_CHANGED notifications: the new status value */
+	private String newStatus;
+
+	@Enumerated(EnumType.STRING)
+	@Builder.Default
+	private NotificationType notificationType = NotificationType.PLAYER_APPLIED;
+
 	@Column(nullable = false)
 	@Builder.Default
 	private boolean isRead = false;
