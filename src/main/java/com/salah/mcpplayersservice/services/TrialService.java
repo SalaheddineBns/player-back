@@ -150,7 +150,7 @@ public class TrialService {
 
 	@Transactional
 	public TrialCandidate updateCandidateStatus(UUID trialId, UUID candidateId, TrialApplicationStatus newStatus,
-			User user) {
+			String message, User user) {
 		Trial trial = trialRepository.findById(trialId)
 			.orElseThrow(() -> new RessourceNotFoundException("Trial", "id", trialId));
 		Team team = user.getTeam();
@@ -168,13 +168,29 @@ public class TrialService {
 		if (!newStatus.equals(previousStatus)) {
 			User playerUser = userRepository.findByPlayerId(candidate.getPlayer().getPlayerId()).orElse(null);
 			if (playerUser != null) {
+				String trimmedMessage = (message != null && !message.isBlank()) ? message.trim() : null;
 				notificationService.createStatusChangeNotification(playerUser, trial.getLocation(),
-						trial.getTrialDate(), trial.getTrialId().toString(), newStatus.name());
-				log.info("[updateCandidateStatus] status change notification sent to player={}", playerUser.getUserId());
+						trial.getTrialDate(), trial.getTrialId().toString(), newStatus.name(), trimmedMessage);
+				log.info("[updateCandidateStatus] status change notification sent to player={}",
+						playerUser.getUserId());
 			}
 		}
 
 		return saved;
+	}
+
+	@Transactional
+	public TrialCandidate updateCandidateNotes(UUID trialId, UUID candidateId, String notes, User user) {
+		Trial trial = trialRepository.findById(trialId)
+			.orElseThrow(() -> new RessourceNotFoundException("Trial", "id", trialId));
+		Team team = user.getTeam();
+		if (team == null || !team.getTeamId().equals(trial.getTeam().getTeamId())) {
+			throw new IllegalStateException("You can only manage candidates for your own trials");
+		}
+		TrialCandidate candidate = trialCandidateRepository.findById(candidateId)
+			.orElseThrow(() -> new RessourceNotFoundException("Candidate", "id", candidateId));
+		candidate.setNotes((notes != null && !notes.isBlank()) ? notes.trim() : null);
+		return trialCandidateRepository.save(candidate);
 	}
 
 	public List<PlayerApplicationSummaryDto> getMyApplications(User user) {

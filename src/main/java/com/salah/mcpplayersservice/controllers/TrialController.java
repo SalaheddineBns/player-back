@@ -1,5 +1,6 @@
 package com.salah.mcpplayersservice.controllers;
 
+import com.salah.mcpplayersservice.dto.request.NoteUpdateRequest;
 import com.salah.mcpplayersservice.dto.request.StatusUpdateRequest;
 import com.salah.mcpplayersservice.dto.request.TrialRequest;
 import com.salah.mcpplayersservice.dto.response.PlayerApplicationSummaryDto;
@@ -99,8 +100,18 @@ public class TrialController {
 	public ResponseEntity<TrialCandidateResponseDto> updateCandidateStatus(@PathVariable UUID trialId,
 			@PathVariable UUID candidateId, @RequestBody @Valid StatusUpdateRequest request,
 			@AuthenticationPrincipal User user) {
+		return ResponseEntity.ok(toCandidateDto(
+				trialService.updateCandidateStatus(trialId, candidateId, request.status(), request.message(), user)));
+	}
+
+	@Operation(summary = "Save or update manager's private notes for a candidate")
+	@PatchMapping("/{trialId}/candidates/{candidateId}/notes")
+	@PreAuthorize("hasRole('TEAM_MANAGER')")
+	public ResponseEntity<TrialCandidateResponseDto> updateCandidateNotes(@PathVariable UUID trialId,
+			@PathVariable UUID candidateId, @RequestBody NoteUpdateRequest request,
+			@AuthenticationPrincipal User user) {
 		return ResponseEntity
-			.ok(toCandidateDto(trialService.updateCandidateStatus(trialId, candidateId, request.status(), user)));
+			.ok(toCandidateDto(trialService.updateCandidateNotes(trialId, candidateId, request.notes(), user)));
 	}
 
 	@Operation(summary = "Get player's applications with current statuses")
@@ -119,7 +130,7 @@ public class TrialController {
 	private TrialCandidateResponseDto toCandidateDto(TrialCandidate c) {
 		return new TrialCandidateResponseDto(c.getCandidateId(), c.getPlayer().getPlayerId(),
 				c.getPlayer().getFirstName(), c.getPlayer().getLastName(), c.getPlayer().getPosition(), c.getStatus(),
-				c.getAppliedAt(), c.getStatusUpdatedAt());
+				c.getAppliedAt(), c.getStatusUpdatedAt(), c.getNotes());
 	}
 
 }

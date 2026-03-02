@@ -39,7 +39,7 @@ public class NotificationService {
 	/** Called when the manager changes a candidate's status — notifies the player */
 	@Transactional
 	public void createStatusChangeNotification(User recipient, String trialLocation, LocalDateTime trialDate,
-			String trialId, String newStatus) {
+			String trialId, String newStatus, String managerMessage) {
 		Notification notification = Notification.builder()
 			.recipient(recipient)
 			.trialLocation(trialLocation)
@@ -47,6 +47,7 @@ public class NotificationService {
 			.trialId(trialId)
 			.notificationType(NotificationType.STATUS_CHANGED)
 			.newStatus(newStatus)
+			.managerMessage(managerMessage)
 			.build();
 		notificationRepository.save(notification);
 	}
@@ -100,9 +101,11 @@ public class NotificationService {
 	}
 
 	private NotificationResponse toResponse(Notification n) {
-		String type = n.getNotificationType() != null ? n.getNotificationType().name() : NotificationType.PLAYER_APPLIED.name();
+		String type = n.getNotificationType() != null ? n.getNotificationType().name()
+				: NotificationType.PLAYER_APPLIED.name();
 		return new NotificationResponse(n.getNotificationId(), n.getPlayerName(), n.getTrialLocation(),
-				n.getTrialDate(), n.getTrialId(), n.isRead(), n.getCreatedAt(), type, n.getNewStatus());
+				n.getTrialDate(), n.getTrialId(), n.isRead(), n.getCreatedAt(), type, n.getNewStatus(),
+				n.getManagerMessage());
 	}
 
 }

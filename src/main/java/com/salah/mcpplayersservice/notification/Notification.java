@@ -36,6 +36,10 @@ public class Notification {
 	/** For STATUS_CHANGED notifications: the new status value */
 	private String newStatus;
 
+	/** Optional message from the manager included with the status decision */
+	@Column(columnDefinition = "TEXT")
+	private String managerMessage;
+
 	@Enumerated(EnumType.STRING)
 	@Builder.Default
 	private NotificationType notificationType = NotificationType.PLAYER_APPLIED;

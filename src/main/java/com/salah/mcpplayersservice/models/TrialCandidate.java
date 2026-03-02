@@ -32,6 +32,10 @@ public class TrialCandidate {
 	@Column(nullable = false, columnDefinition = "VARCHAR(50)")
 	private TrialApplicationStatus status = TrialApplicationStatus.PENDING;
 
+	/** Private notes visible only to the manager */
+	@Column(columnDefinition = "TEXT")
+	private String notes;
+
 	private LocalDateTime appliedAt;
 
 	private LocalDateTime statusUpdatedAt;
