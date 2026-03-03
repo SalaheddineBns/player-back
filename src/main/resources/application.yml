@@ -5,9 +5,9 @@ spring:
       max-file-size: 300MB
       max-request-size: 300MB
   datasource:
-    url: jdbc:postgresql://localhost:5432/playersdb
-    username: salah
-    password: salah123
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/playersdb}
+    username: ${DATABASE_USERNAME:salah}
+    password: ${DATABASE_PASSWORD:salah123}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -29,8 +29,11 @@ spring:
         version: 1.0.0
 
 media:
-  upload-dir: uploads
+  upload-dir: ${MEDIA_UPLOAD_DIR:uploads}
+
+cors:
+  allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:4200}
 
 jwt:
-  secret: ZmFrZVNlY3JldEtleUZvckRldmVsb3BtZW50T25seURvTm90VXNlSW5Qcm9k
+  secret: ${JWT_SECRET:ZmFrZVNlY3JldEtleUZvckRldmVsb3BtZW50T25seURvTm90VXNlSW5Qcm9k}
   expiration: 86400000
