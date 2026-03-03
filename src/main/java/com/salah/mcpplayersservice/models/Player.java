@@ -40,6 +40,9 @@ public class Player {
 
 	private Integer preferredNumber;
 
+	/** Player competitive level, e.g. Amateur, Semi-Pro, Professional, Youth, Academy */
+	private String level;
+
 	@Enumerated(EnumType.STRING)
 	@Column(columnDefinition = "varchar(255) default 'AVAILABLE'")
 	@Builder.Default

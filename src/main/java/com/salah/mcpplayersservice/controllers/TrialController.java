@@ -129,8 +129,8 @@ public class TrialController {
 
 	private TrialCandidateResponseDto toCandidateDto(TrialCandidate c) {
 		return new TrialCandidateResponseDto(c.getCandidateId(), c.getPlayer().getPlayerId(),
-				c.getPlayer().getFirstName(), c.getPlayer().getLastName(), c.getPlayer().getPosition(), c.getStatus(),
-				c.getAppliedAt(), c.getStatusUpdatedAt(), c.getNotes());
+				c.getPlayer().getFirstName(), c.getPlayer().getLastName(), c.getPlayer().getPosition(),
+				c.getPlayer().getLevel(), c.getStatus(), c.getAppliedAt(), c.getStatusUpdatedAt(), c.getNotes());
 	}
 
 }
