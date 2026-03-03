@@ -36,6 +36,21 @@ public class NotificationService {
 		notificationRepository.save(notification);
 	}
 
+	/** Called when a player withdraws their application — notifies the team manager */
+	@Transactional
+	public void createWithdrawalNotification(User recipient, String playerName, String trialLocation,
+			LocalDateTime trialDate, String trialId) {
+		Notification notification = Notification.builder()
+			.recipient(recipient)
+			.playerName(playerName)
+			.trialLocation(trialLocation)
+			.trialDate(trialDate)
+			.trialId(trialId)
+			.notificationType(NotificationType.PLAYER_WITHDREW)
+			.build();
+		notificationRepository.save(notification);
+	}
+
 	/** Called when the manager changes a candidate's status — notifies the player */
 	@Transactional
 	public void createStatusChangeNotification(User recipient, String trialLocation, LocalDateTime trialDate,

@@ -6,6 +6,9 @@ public enum NotificationType {
 	PLAYER_APPLIED,
 
 	/** Player receives this when the manager updates their application status */
-	STATUS_CHANGED
+	STATUS_CHANGED,
+
+	/** Manager receives this when a player withdraws their application */
+	PLAYER_WITHDREW
 
 }

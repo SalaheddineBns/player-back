@@ -132,10 +132,29 @@ public class TrialService {
 		if (player == null) {
 			throw new IllegalStateException("User is not a player");
 		}
+		Trial trial = trialRepository.findById(trialId)
+			.orElseThrow(() -> new RessourceNotFoundException("Trial", "id", trialId));
 		TrialCandidate candidate = trialCandidateRepository
 			.findByTrialTrialIdAndPlayerPlayerId(trialId, player.getPlayerId())
 			.orElseThrow(() -> new RessourceNotFoundException("Application", "trial", trialId));
-		trialCandidateRepository.delete(candidate);
+		if (candidate.getStatus() != TrialApplicationStatus.PENDING
+				&& candidate.getStatus() != TrialApplicationStatus.SHORTLISTED) {
+			throw new IllegalStateException("You can only withdraw a pending or shortlisted application");
+		}
+		candidate.setStatus(TrialApplicationStatus.CANCELLED);
+		trialCandidateRepository.save(candidate);
+
+		// Notify the team manager
+		Team team = trial.getTeam();
+		User manager = team.getUser();
+		if (manager == null) {
+			manager = userRepository.findByPlayerTeamAndRole(team.getTeamId(), Role.TEAM_MANAGER).orElse(null);
+		}
+		if (manager != null) {
+			String playerName = player.getFirstName() + " " + player.getLastName();
+			notificationService.createWithdrawalNotification(manager, playerName, trial.getLocation(),
+					trial.getTrialDate(), trialId.toString());
+		}
 	}
 
 	public List<TrialCandidate> getCandidates(UUID trialId, User user) {

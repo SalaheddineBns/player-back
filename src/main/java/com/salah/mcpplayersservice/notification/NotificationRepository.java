@@ -9,17 +9,17 @@ import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<Notification, String> {
 
-	// Manager notifications (PLAYER_APPLIED or legacy null)
+	// Manager notifications (PLAYER_APPLIED, PLAYER_WITHDREW, or legacy null)
 	@Query("""
 			SELECT n FROM Notification n WHERE n.recipient.userId = :userId
-			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType IS NULL)
+			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType = 'PLAYER_WITHDREW' OR n.notificationType IS NULL)
 			ORDER BY n.createdAt DESC
 			""")
 	List<Notification> findManagerNotifications(@Param("userId") UUID userId);
 
 	@Query("""
 			SELECT COUNT(n) FROM Notification n WHERE n.recipient.userId = :userId
-			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType IS NULL)
+			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType = 'PLAYER_WITHDREW' OR n.notificationType IS NULL)
 			AND n.isRead = false
 			""")
 	long countUnreadManagerNotifications(@Param("userId") UUID userId);
