@@ -171,6 +171,9 @@ public class PlayerController {
 		if (request.status() != null) {
 			player.setStatus(request.status());
 		}
+		if (request.level() != null) {
+			player.setLevel(request.level());
+		}
 		if (request.teamId() != null) {
 			Team selectedTeam = teamRepository.findById(request.teamId())
 				.orElseThrow(() -> new RessourceNotFoundException("Team", "id", request.teamId()));

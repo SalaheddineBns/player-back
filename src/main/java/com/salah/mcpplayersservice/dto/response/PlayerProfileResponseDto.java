@@ -5,6 +5,6 @@ import java.util.UUID;
 
 public record PlayerProfileResponseDto(UUID playerId, UUID userId, String firstName, String lastName, String userName,
 		String email, String position, String nationality, String city, String gender, String preferredLeg,
-		Integer preferredNumber, String profilePictureUrl, String status, PlayerTeamResponseDto team,
+		Integer preferredNumber, String profilePictureUrl, String status, String level, PlayerTeamResponseDto team,
 		List<MediaResponseDto> mediaItems) {
 }

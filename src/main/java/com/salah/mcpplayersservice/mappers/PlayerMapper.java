@@ -28,6 +28,7 @@ public interface PlayerMapper {
 	@Mapping(source = "player.team", target = "team")
 	@Mapping(source = "player.profilePictureUrl", target = "profilePictureUrl")
 	@Mapping(target = "status", expression = "java(player.getStatus() != null ? player.getStatus().name() : null)")
+	@Mapping(source = "player.level", target = "level")
 	@Mapping(source = "user.username", target = "userName")
 	@Mapping(source = "user.email", target = "email")
 	PlayerResponseDto toPlayerResponseDto(Player player, User user);
@@ -45,6 +46,7 @@ public interface PlayerMapper {
 	@Mapping(source = "player.team", target = "team")
 	@Mapping(source = "player.profilePictureUrl", target = "profilePictureUrl")
 	@Mapping(target = "status", expression = "java(player.getStatus() != null ? player.getStatus().name() : null)")
+	@Mapping(source = "player.level", target = "level")
 	@Mapping(source = "user.username", target = "userName")
 	@Mapping(source = "user.email", target = "email")
 	@Mapping(source = "mediaItems", target = "mediaItems")
