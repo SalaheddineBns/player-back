@@ -9,6 +9,7 @@ import com.salah.mcpplayersservice.repository.TeamRepository;
 import com.salah.mcpplayersservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Component
+@Profile("dev")
 @RequiredArgsConstructor
 public class TeamDataSeeder implements CommandLineRunner {
 
