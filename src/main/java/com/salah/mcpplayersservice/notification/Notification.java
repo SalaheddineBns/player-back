@@ -28,7 +28,6 @@ public class Notification {
 
 	private String trialLocation;
 
-	@Column(nullable = false)
 	private LocalDateTime trialDate;
 
 	private String trialId;
@@ -39,6 +38,14 @@ public class Notification {
 	/** Optional message from the manager included with the status decision */
 	@Column(columnDefinition = "TEXT")
 	private String managerMessage;
+
+	// ── Test Invitation notification fields ──────────────────────────────────
+
+	/** TestInvitation or TestSlot ID — set for invitation/slot notifications */
+	private String invitationId;
+
+	/** Team name — set for notifications sent to the player */
+	private String teamName;
 
 	@Enumerated(EnumType.STRING)
 	@Builder.Default

@@ -9,32 +9,48 @@ import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<Notification, String> {
 
-	// Manager notifications (PLAYER_APPLIED, PLAYER_WITHDREW, or legacy null)
+	// Manager notifications
 	@Query("""
 			SELECT n FROM Notification n WHERE n.recipient.userId = :userId
-			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType = 'PLAYER_WITHDREW' OR n.notificationType IS NULL)
+			AND (n.notificationType = 'PLAYER_APPLIED'
+			  OR n.notificationType = 'PLAYER_WITHDREW'
+			  OR n.notificationType = 'TEST_INVITATION_ACCEPTED'
+			  OR n.notificationType = 'TEST_INVITATION_DECLINED'
+			  OR n.notificationType = 'TEST_SLOT_CANCELLED_BY_PLAYER'
+			  OR n.notificationType IS NULL)
 			ORDER BY n.createdAt DESC
 			""")
 	List<Notification> findManagerNotifications(@Param("userId") UUID userId);
 
 	@Query("""
 			SELECT COUNT(n) FROM Notification n WHERE n.recipient.userId = :userId
-			AND (n.notificationType = 'PLAYER_APPLIED' OR n.notificationType = 'PLAYER_WITHDREW' OR n.notificationType IS NULL)
+			AND (n.notificationType = 'PLAYER_APPLIED'
+			  OR n.notificationType = 'PLAYER_WITHDREW'
+			  OR n.notificationType = 'TEST_INVITATION_ACCEPTED'
+			  OR n.notificationType = 'TEST_INVITATION_DECLINED'
+			  OR n.notificationType = 'TEST_SLOT_CANCELLED_BY_PLAYER'
+			  OR n.notificationType IS NULL)
 			AND n.isRead = false
 			""")
 	long countUnreadManagerNotifications(@Param("userId") UUID userId);
 
-	// Player notifications (STATUS_CHANGED)
+	// Player notifications
 	@Query("""
 			SELECT n FROM Notification n WHERE n.recipient.userId = :userId
-			AND n.notificationType = 'STATUS_CHANGED'
+			AND (n.notificationType = 'STATUS_CHANGED'
+			  OR n.notificationType = 'TEST_INVITATION_RECEIVED'
+			  OR n.notificationType = 'TEST_SLOT_CANCELLED_BY_MANAGER'
+			  OR n.notificationType = 'TEST_RESULT_PUBLISHED')
 			ORDER BY n.createdAt DESC
 			""")
 	List<Notification> findPlayerNotifications(@Param("userId") UUID userId);
 
 	@Query("""
 			SELECT COUNT(n) FROM Notification n WHERE n.recipient.userId = :userId
-			AND n.notificationType = 'STATUS_CHANGED'
+			AND (n.notificationType = 'STATUS_CHANGED'
+			  OR n.notificationType = 'TEST_INVITATION_RECEIVED'
+			  OR n.notificationType = 'TEST_SLOT_CANCELLED_BY_MANAGER'
+			  OR n.notificationType = 'TEST_RESULT_PUBLISHED')
 			AND n.isRead = false
 			""")
 	long countUnreadPlayerNotifications(@Param("userId") UUID userId);

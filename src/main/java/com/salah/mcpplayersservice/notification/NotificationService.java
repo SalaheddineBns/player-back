@@ -115,12 +115,99 @@ public class NotificationService {
 		notificationRepository.saveAll(notifications);
 	}
 
+	// ── Test Invitation notifications ────────────────────────────────────────
+
+	/** Player receives: a manager invited them to a private test */
+	@Transactional
+	public void createTestInvitationReceivedNotification(User player, String teamName, String managerName,
+			LocalDateTime proposedDate, String invitationId) {
+		Notification notification = Notification.builder()
+			.recipient(player)
+			.teamName(teamName)
+			.playerName(managerName)
+			.trialDate(proposedDate)
+			.invitationId(invitationId)
+			.notificationType(NotificationType.TEST_INVITATION_RECEIVED)
+			.build();
+		notificationRepository.save(notification);
+	}
+
+	/** Manager receives: player accepted their invitation */
+	@Transactional
+	public void createTestInvitationAcceptedNotification(User manager, String playerName, LocalDateTime scheduledDate,
+			String invitationId) {
+		Notification notification = Notification.builder()
+			.recipient(manager)
+			.playerName(playerName)
+			.trialDate(scheduledDate)
+			.invitationId(invitationId)
+			.notificationType(NotificationType.TEST_INVITATION_ACCEPTED)
+			.build();
+		notificationRepository.save(notification);
+	}
+
+	/** Manager receives: player declined their invitation */
+	@Transactional
+	public void createTestInvitationDeclinedNotification(User manager, String playerName, String invitationId) {
+		Notification notification = Notification.builder()
+			.recipient(manager)
+			.playerName(playerName)
+			.invitationId(invitationId)
+			.notificationType(NotificationType.TEST_INVITATION_DECLINED)
+			.build();
+		notificationRepository.save(notification);
+	}
+
+	/** Manager receives: player cancelled the test slot */
+	@Transactional
+	public void createSlotCancelledByPlayerNotification(User manager, String playerName, LocalDateTime scheduledDate,
+			String invitationId, String reason) {
+		Notification notification = Notification.builder()
+			.recipient(manager)
+			.playerName(playerName)
+			.trialDate(scheduledDate)
+			.invitationId(invitationId)
+			.managerMessage(reason)
+			.notificationType(NotificationType.TEST_SLOT_CANCELLED_BY_PLAYER)
+			.build();
+		notificationRepository.save(notification);
+	}
+
+	/** Player receives: manager cancelled the test slot */
+	@Transactional
+	public void createSlotCancelledByManagerNotification(User player, String teamName, LocalDateTime scheduledDate,
+			String invitationId, String reason) {
+		Notification notification = Notification.builder()
+			.recipient(player)
+			.teamName(teamName)
+			.trialDate(scheduledDate)
+			.invitationId(invitationId)
+			.managerMessage(reason)
+			.notificationType(NotificationType.TEST_SLOT_CANCELLED_BY_MANAGER)
+			.build();
+		notificationRepository.save(notification);
+	}
+
+	/** Player receives: manager published the test result */
+	@Transactional
+	public void createTestResultPublishedNotification(User player, String teamName, String resultStatus,
+			String invitationId) {
+		Notification notification = Notification.builder()
+			.recipient(player)
+			.teamName(teamName)
+			.newStatus(resultStatus)
+			.invitationId(invitationId)
+			.notificationType(NotificationType.TEST_RESULT_PUBLISHED)
+			.build();
+		notificationRepository.save(notification);
+	}
+
 	private NotificationResponse toResponse(Notification n) {
 		String type = n.getNotificationType() != null ? n.getNotificationType().name()
 				: NotificationType.PLAYER_APPLIED.name();
 		return new NotificationResponse(n.getNotificationId(), n.getPlayerName(), n.getTrialLocation(),
 				n.getTrialDate(), n.getTrialId(), n.isRead(), n.getCreatedAt(), type, n.getNewStatus(),
-				n.getManagerMessage());
+				n.getManagerMessage(), n.getInvitationId(), n.getTeamName());
 	}
 
 }
