@@ -37,6 +37,7 @@ uploads/
 
 ### Claude Code ###
 .claude/
+CLAUDE.md
 
 ### System files ###
 .DS_Store
