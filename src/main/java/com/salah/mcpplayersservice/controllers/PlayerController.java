@@ -96,12 +96,15 @@ public class PlayerController {
 	@ApiResponse(responseCode = "200", description = "Search results returned successfully")
 	@GetMapping("/search")
 	public ResponseEntity<Page<PlayerResponseDto>> searchPlayers(
-			@RequestParam(defaultValue = "LOOKING_FOR_TEAM") PlayerStatus status,
+			@RequestParam(required = false) List<PlayerStatus> statuses,
 			@RequestParam(required = false) String position, @RequestParam(required = false) String nationality,
 			@RequestParam(required = false) String city, @RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "10") int size) {
+		if (statuses == null || statuses.isEmpty()) {
+			statuses = List.of(PlayerStatus.LOOKING_FOR_TEAM, PlayerStatus.AVAILABLE);
+		}
 		Page<PlayerResponseDto> results = playerRepository
-			.searchByStatusWithFilters(status, position, nationality, city, PageRequest.of(page, size))
+			.searchByStatusWithFilters(statuses, position, nationality, city, PageRequest.of(page, size))
 			.map(player -> playerMapper.toPlayerResponseDto(player, player.getUser()));
 		return ResponseEntity.ok(results);
 	}
