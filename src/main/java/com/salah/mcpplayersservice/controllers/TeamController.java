@@ -74,18 +74,12 @@ public class TeamController {
 
 	@Operation(summary = "Search teams", description = "Search teams by name, city, and country with pagination")
 	@GetMapping("/search")
-	public ResponseEntity<Page<TeamOptionResponseDto>> searchTeams(Authentication authentication,
+	public ResponseEntity<Page<TeamOptionResponseDto>> searchTeams(
 			@RequestParam(value = "q", defaultValue = "") String query,
 			@RequestParam(value = "city", defaultValue = "") String city,
 			@RequestParam(value = "country", defaultValue = "") String country,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "10") int size) {
-		if (country.isBlank()) {
-			User user = resolveUser(authentication);
-			if (user instanceof Player player && player.getNationality() != null) {
-				country = player.getNationality();
-			}
-		}
 		return ResponseEntity.ok(teamService.searchTeams(query, city, country, page, size));
 	}
 
