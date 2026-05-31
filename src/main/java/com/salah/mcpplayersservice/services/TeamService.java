@@ -2,6 +2,7 @@ package com.salah.mcpplayersservice.services;
 
 import com.salah.mcpplayersservice.dto.request.TeamUpdateRequest;
 import com.salah.mcpplayersservice.dto.response.PublicationResponseDto;
+import com.salah.mcpplayersservice.dto.response.TeamLocationsDto;
 import com.salah.mcpplayersservice.dto.response.TeamOptionResponseDto;
 import com.salah.mcpplayersservice.dto.response.TeamPageResponseDto;
 import com.salah.mcpplayersservice.dto.response.RecruitmentNeedResponseDto;
@@ -85,6 +86,13 @@ public class TeamService {
 		String countryParam = (country == null || country.isBlank()) ? "" : country;
 		Page<Team> teams = teamRepository.searchTeams(keywordParam, cityParam, countryParam, pageRequest);
 		return teams.map(teamMapper::toTeamOptionResponseDto);
+	}
+
+	public TeamLocationsDto getLocations(String country) {
+		String countryParam = (country == null || country.isBlank()) ? "" : country;
+		List<String> countries = teamRepository.findDistinctCountries();
+		List<String> cities = teamRepository.findDistinctCitiesByCountry(countryParam);
+		return new TeamLocationsDto(countries, cities);
 	}
 
 	public void subscribe(Player player, UUID teamId) {

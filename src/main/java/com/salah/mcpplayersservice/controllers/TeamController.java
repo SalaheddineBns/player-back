@@ -1,6 +1,7 @@
 package com.salah.mcpplayersservice.controllers;
 
 import com.salah.mcpplayersservice.dto.request.TeamUpdateRequest;
+import com.salah.mcpplayersservice.dto.response.TeamLocationsDto;
 import com.salah.mcpplayersservice.dto.response.TeamOptionResponseDto;
 import com.salah.mcpplayersservice.dto.response.TeamPageResponseDto;
 import com.salah.mcpplayersservice.models.Player;
@@ -64,6 +65,13 @@ public class TeamController {
 		return ResponseEntity.ok(teamService.getTeamPage(teamId));
 	}
 
+	@Operation(summary = "Get distinct team countries and cities for filter dropdowns")
+	@GetMapping("/locations")
+	public ResponseEntity<TeamLocationsDto> getLocations(
+			@RequestParam(value = "country", defaultValue = "") String country) {
+		return ResponseEntity.ok(teamService.getLocations(country));
+	}
+
 	@Operation(summary = "Search teams", description = "Search teams by name, city, and country with pagination")
 	@GetMapping("/search")
 	public ResponseEntity<Page<TeamOptionResponseDto>> searchTeams(Authentication authentication,
@@ -72,7 +80,12 @@ public class TeamController {
 			@RequestParam(value = "country", defaultValue = "") String country,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "10") int size) {
-
+		if (country.isBlank()) {
+			User user = resolveUser(authentication);
+			if (user instanceof Player player && player.getNationality() != null) {
+				country = player.getNationality();
+			}
+		}
 		return ResponseEntity.ok(teamService.searchTeams(query, city, country, page, size));
 	}
 

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,5 +28,11 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 			@Param("country") String country, Pageable pageable);
 
 	Optional<Team> findByUser(User user);
+
+	@Query("SELECT DISTINCT t.country FROM Team t WHERE t.country IS NOT NULL ORDER BY t.country")
+	List<String> findDistinctCountries();
+
+	@Query("SELECT DISTINCT t.city FROM Team t WHERE t.city IS NOT NULL AND (:country = '' OR LOWER(t.country) = LOWER(:country)) ORDER BY t.city")
+	List<String> findDistinctCitiesByCountry(@Param("country") String country);
 
 }
