@@ -113,8 +113,7 @@ public class TestInvitationService {
 		invitation.setRespondedAt(LocalDateTime.now());
 		User manager = invitation.getManager();
 		Team team = manager.getTeam();
-		String playerFullName = player.getPlayer() != null
-				? player.getPlayer().getFirstName() + " " + player.getPlayer().getLastName() : player.getUsername();
+		String playerFullName = player.getFirstName() + " " + player.getLastName();
 
 		if (Boolean.TRUE.equals(request.accepted())) {
 			invitation.setStatus(TestInvitationStatus.ACCEPTED);
@@ -182,10 +181,7 @@ public class TestInvitationService {
 		slot.setCancelledAt(LocalDateTime.now());
 
 		Team team = invitation.getManager().getTeam();
-		String playerFullName = invitation.getPlayer().getPlayer() != null
-				? invitation.getPlayer().getPlayer().getFirstName() + " "
-						+ invitation.getPlayer().getPlayer().getLastName()
-				: invitation.getPlayer().getUsername();
+		String playerFullName = invitation.getPlayer().getFirstName() + " " + invitation.getPlayer().getLastName();
 
 		if (isManager) {
 			slot.setStatus(TestSlotStatus.CANCELLED_BY_MANAGER);
@@ -278,12 +274,11 @@ public class TestInvitationService {
 
 	TestInvitationResponseDto toDto(TestInvitation inv) {
 		Team team = inv.getManager().getTeam();
-		Player playerProfile = inv.getPlayer().getPlayer();
+		User invPlayer = inv.getPlayer();
 		return new TestInvitationResponseDto(inv.getInvitationId(), inv.getManager().getUserId(),
 				team != null ? team.getTeamName() : null, team != null ? team.getLogoUrl() : null,
-				inv.getPlayer().getUserId(), playerProfile != null ? playerProfile.getFirstName() : null,
-				playerProfile != null ? playerProfile.getLastName() : null, inv.getProposedDate(), inv.getMessage(),
-				inv.getStatus(), inv.getCreatedAt(), inv.getRespondedAt(),
+				invPlayer.getUserId(), invPlayer.getFirstName(), invPlayer.getLastName(), inv.getProposedDate(),
+				inv.getMessage(), inv.getStatus(), inv.getCreatedAt(), inv.getRespondedAt(),
 				inv.getSlot() != null ? toSlotDto(inv.getSlot()) : null);
 	}
 

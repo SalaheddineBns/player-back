@@ -6,8 +6,10 @@ import com.salah.mcpplayersservice.dto.response.AuthResponseDto;
 import com.salah.mcpplayersservice.dto.response.ErrorResponseDto;
 import com.salah.mcpplayersservice.dto.response.PlayerResponseDto;
 import com.salah.mcpplayersservice.mappers.PlayerMapper;
+import com.salah.mcpplayersservice.models.Player;
 import com.salah.mcpplayersservice.models.User;
 import com.salah.mcpplayersservice.services.AuthService;
+import java.util.Map;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,9 +46,13 @@ public class AuthController {
 	@ApiResponse(responseCode = "400", description = "Validation error",
 			content = @Content(schema = @Schema(implementation = ErrorResponseDto.class)))
 	@PostMapping("/signup")
-	public ResponseEntity<PlayerResponseDto> signup(@Valid @RequestBody SignupRequest request) {
+	public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
 		User user = authService.signup(request);
-		return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(user.getPlayer(), user));
+		if (user instanceof Player player) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(playerMapper.toPlayerResponseDto(player));
+		}
+		return ResponseEntity.status(HttpStatus.CREATED)
+			.body(Map.of("message", "Team manager registered successfully", "role", "TEAM_MANAGER"));
 	}
 
 	@Operation(summary = "Login", description = "Authenticates a user and returns a JWT token with role")

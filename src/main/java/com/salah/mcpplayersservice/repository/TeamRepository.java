@@ -1,6 +1,7 @@
 package com.salah.mcpplayersservice.repository;
 
 import com.salah.mcpplayersservice.models.Team;
+import com.salah.mcpplayersservice.models.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,5 +25,7 @@ public interface TeamRepository extends JpaRepository<Team, UUID> {
 			+ "(:country = '' OR LOWER(t.country) LIKE LOWER(CONCAT('%', :country, '%')))")
 	Page<Team> searchTeams(@Param("keyword") String keyword, @Param("city") String city,
 			@Param("country") String country, Pageable pageable);
+
+	Optional<Team> findByUser(User user);
 
 }

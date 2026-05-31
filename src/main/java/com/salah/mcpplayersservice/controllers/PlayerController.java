@@ -9,6 +9,7 @@ import com.salah.mcpplayersservice.exceptions.RessourceNotFoundException;
 import com.salah.mcpplayersservice.mappers.MediaMapper;
 import com.salah.mcpplayersservice.mappers.PlayerMapper;
 import com.salah.mcpplayersservice.models.Player;
+import com.salah.mcpplayersservice.models.PlayerStatus;
 import com.salah.mcpplayersservice.models.Team;
 import com.salah.mcpplayersservice.models.User;
 import com.salah.mcpplayersservice.repository.MediaViewRepository;
@@ -21,10 +22,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
-import com.salah.mcpplayersservice.models.PlayerStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,13 +39,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/players")
@@ -73,27 +71,23 @@ public class PlayerController {
 		this.mediaViewRepository = mediaViewRepository;
 	}
 
-	@Operation(summary = "Get available players",
-			description = "Returns players whose status is AVAILABLE or LOOKING_FOR_TEAM")
-	@ApiResponse(responseCode = "200", description = "List returned successfully")
+	@Operation(summary = "Get available players")
 	@GetMapping("/available")
 	public ResponseEntity<List<PlayerResponseDto>> getAvailablePlayers() {
 		List<PlayerResponseDto> available = playerRepository.findByStatus(PlayerStatus.AVAILABLE)
 			.stream()
-			.map(player -> playerMapper.toPlayerResponseDto(player, player.getUser()))
+			.map(playerMapper::toPlayerResponseDto)
 			.toList();
 		List<PlayerResponseDto> lookingForTeam = playerRepository.findByStatus(PlayerStatus.LOOKING_FOR_TEAM)
 			.stream()
-			.map(player -> playerMapper.toPlayerResponseDto(player, player.getUser()))
+			.map(playerMapper::toPlayerResponseDto)
 			.toList();
 		List<PlayerResponseDto> result = new java.util.ArrayList<>(available);
 		result.addAll(lookingForTeam);
 		return ResponseEntity.ok(result);
 	}
 
-	@Operation(summary = "Search players by status",
-			description = "Search players with optional position, nationality, and city filters")
-	@ApiResponse(responseCode = "200", description = "Search results returned successfully")
+	@Operation(summary = "Search players by status")
 	@GetMapping("/search")
 	public ResponseEntity<Page<PlayerResponseDto>> searchPlayers(
 			@RequestParam(required = false) List<PlayerStatus> statuses,
@@ -105,12 +99,11 @@ public class PlayerController {
 		}
 		Page<PlayerResponseDto> results = playerRepository
 			.searchByStatusWithFilters(statuses, position, nationality, city, PageRequest.of(page, size))
-			.map(player -> playerMapper.toPlayerResponseDto(player, player.getUser()));
+			.map(playerMapper::toPlayerResponseDto);
 		return ResponseEntity.ok(results);
 	}
 
-	@Operation(summary = "Get current player profile",
-			description = "Returns the profile of the currently authenticated player")
+	@Operation(summary = "Get current player profile")
 	@ApiResponse(responseCode = "200", description = "Profile returned successfully",
 			content = @Content(schema = @Schema(implementation = PlayerResponseDto.class)))
 	@ApiResponse(responseCode = "401", description = "Not authenticated",
@@ -123,14 +116,13 @@ public class PlayerController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
-		if (user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
-		return ResponseEntity.ok(playerMapper.toPlayerResponseDto(user.getPlayer(), user));
+		return ResponseEntity.ok(playerMapper.toPlayerResponseDto(player));
 	}
 
-	@Operation(summary = "Update current player profile",
-			description = "Updates the profile of the currently authenticated player")
+	@Operation(summary = "Update current player profile")
 	@ApiResponse(responseCode = "200", description = "Profile updated successfully",
 			content = @Content(schema = @Schema(implementation = PlayerResponseDto.class)))
 	@ApiResponse(responseCode = "403", description = "User is not a player",
@@ -142,79 +134,60 @@ public class PlayerController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
-		if (user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
-
-		Player player = user.getPlayer();
-		if (request.firstName() != null) {
+		if (request.firstName() != null)
 			player.setFirstName(request.firstName());
-		}
-		if (request.lastName() != null) {
+		if (request.lastName() != null)
 			player.setLastName(request.lastName());
-		}
-		if (request.gender() != null) {
+		if (request.gender() != null)
 			player.setGender(request.gender());
-		}
-		if (request.position() != null) {
+		if (request.position() != null)
 			player.setPosition(request.position());
-		}
-		if (request.nationality() != null) {
+		if (request.nationality() != null)
 			player.setNationality(request.nationality());
-		}
-		if (request.city() != null) {
+		if (request.city() != null)
 			player.setCity(request.city());
-		}
-		if (request.preferredLeg() != null) {
+		if (request.preferredLeg() != null)
 			player.setPreferredLeg(request.preferredLeg());
-		}
-		if (request.preferredNumber() != null) {
+		if (request.preferredNumber() != null)
 			player.setPreferredNumber(request.preferredNumber());
-		}
-		if (request.status() != null) {
+		if (request.status() != null)
 			player.setStatus(request.status());
-		}
-		if (request.level() != null) {
+		if (request.level() != null)
 			player.setLevel(request.level());
-		}
 		if (request.teamId() != null) {
 			Team selectedTeam = teamRepository.findById(request.teamId())
 				.orElseThrow(() -> new RessourceNotFoundException("Team", "id", request.teamId()));
 			player.setTeam(selectedTeam);
 		}
-
 		playerRepository.save(player);
-
-		return ResponseEntity.ok(playerMapper.toPlayerResponseDto(player, user));
+		return ResponseEntity.ok(playerMapper.toPlayerResponseDto(player));
 	}
 
-	@Operation(summary = "Upload profile picture", description = "Uploads a profile picture for the current player")
+	@Operation(summary = "Upload profile picture")
 	@PutMapping("/me/picture")
 	public ResponseEntity<?> uploadProfilePicture(Authentication authentication,
 			@RequestParam("file") MultipartFile file) {
 		User user = resolveCurrentUser(authentication);
-		if (user == null || user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
-
 		String contentType = file.getContentType();
 		if (contentType == null || !contentType.startsWith("image/")) {
 			return ResponseEntity.badRequest().body(Map.of("message", "Only image files are allowed"));
 		}
-
 		try {
 			Path uploadPath = Paths.get(uploadDir, "profiles");
 			Files.createDirectories(uploadPath);
-
 			String extension = getExtension(file.getOriginalFilename());
-			String fileName = "player-" + user.getPlayer().getPlayerId() + extension;
+			String fileName = "player-" + player.getPlayerId() + extension;
 			Path filePath = uploadPath.resolve(fileName);
 			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-			String pictureUrl = "/api/players/" + user.getPlayer().getPlayerId() + "/picture";
-			user.getPlayer().setProfilePictureUrl(pictureUrl);
-			playerRepository.save(user.getPlayer());
-
+			String pictureUrl = "/api/players/" + player.getPlayerId() + "/picture";
+			player.setProfilePictureUrl(pictureUrl);
+			playerRepository.save(player);
 			return ResponseEntity.ok(Map.of("profilePictureUrl", pictureUrl));
 		}
 		catch (IOException ex) {
@@ -222,21 +195,16 @@ public class PlayerController {
 		}
 	}
 
-	@Operation(summary = "Get player profile by ID",
-			description = "Returns the public profile of a player including media items")
-	@ApiResponse(responseCode = "200", description = "Profile returned successfully")
-	@ApiResponse(responseCode = "404", description = "Player not found")
+	@Operation(summary = "Get player profile by ID")
 	@GetMapping("/{playerId}")
 	public ResponseEntity<PlayerProfileResponseDto> getPlayerProfile(@PathVariable UUID playerId) {
 		Player player = playerRepository.findById(playerId)
 			.orElseThrow(() -> new RessourceNotFoundException("Player", "id", playerId));
-
 		List<MediaResponseDto> mediaDtos = player.getMediaItems().stream().map(media -> {
 			long viewCount = mediaViewRepository.countByMediaMediaId(media.getMediaId());
 			return mediaMapper.toMediaResponseDto(media, viewCount);
 		}).toList();
-
-		return ResponseEntity.ok(playerMapper.toPlayerProfileResponseDto(player, player.getUser(), mediaDtos));
+		return ResponseEntity.ok(playerMapper.toPlayerProfileResponseDto(player, mediaDtos));
 	}
 
 	@GetMapping("/{playerId}/picture")
@@ -245,24 +213,19 @@ public class PlayerController {
 		if (player == null || player.getProfilePictureUrl() == null) {
 			return ResponseEntity.notFound().build();
 		}
-
 		try {
 			Path uploadPath = Paths.get(uploadDir, "profiles");
 			Path pictureFile = Files.list(uploadPath)
 				.filter(p -> p.getFileName().toString().startsWith("player-" + playerId))
 				.findFirst()
 				.orElse(null);
-
 			if (pictureFile == null || !Files.exists(pictureFile)) {
 				return ResponseEntity.notFound().build();
 			}
-
 			byte[] bytes = Files.readAllBytes(pictureFile);
 			String type = Files.probeContentType(pictureFile);
-			if (type == null) {
+			if (type == null)
 				type = "image/png";
-			}
-
 			return ResponseEntity.ok()
 				.header("Content-Type", type)
 				.header("Cache-Control", "max-age=86400")
@@ -274,31 +237,20 @@ public class PlayerController {
 	}
 
 	private String getExtension(String filename) {
-		if (filename == null) {
+		if (filename == null)
 			return ".png";
-		}
 		int dot = filename.lastIndexOf('.');
 		return dot >= 0 ? filename.substring(dot) : ".png";
 	}
 
 	private User resolveCurrentUser(Authentication authentication) {
-		if (authentication == null || authentication.getPrincipal() == null) {
+		if (authentication == null || authentication.getPrincipal() == null)
 			return null;
-		}
-
-		String userName;
 		Object principal = authentication.getPrincipal();
-		if (principal instanceof User userPrincipal) {
-			return userPrincipal;
-		}
-		if (principal instanceof UserDetails userDetails) {
-			userName = userDetails.getUsername();
-		}
-		else {
-			userName = principal.toString();
-		}
-
-		return userRepository.findByUserNameWithPlayer(userName).orElse(null);
+		if (principal instanceof User u)
+			return u;
+		String userName = principal instanceof UserDetails ud ? ud.getUsername() : principal.toString();
+		return userRepository.findByUserName(userName).orElse(null);
 	}
 
 }

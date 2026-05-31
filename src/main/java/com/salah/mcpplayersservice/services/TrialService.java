@@ -8,7 +8,6 @@ import com.salah.mcpplayersservice.models.*;
 import com.salah.mcpplayersservice.notification.NotificationService;
 import com.salah.mcpplayersservice.repository.TrialCandidateRepository;
 import com.salah.mcpplayersservice.repository.TrialRepository;
-import com.salah.mcpplayersservice.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,14 +27,11 @@ public class TrialService {
 
 	private final NotificationService notificationService;
 
-	private final UserRepository userRepository;
-
 	public TrialService(TrialRepository trialRepository, TrialCandidateRepository trialCandidateRepository,
-			NotificationService notificationService, UserRepository userRepository) {
+			NotificationService notificationService) {
 		this.trialRepository = trialRepository;
 		this.trialCandidateRepository = trialCandidateRepository;
 		this.notificationService = notificationService;
-		this.userRepository = userRepository;
 	}
 
 	@Transactional
@@ -86,11 +82,10 @@ public class TrialService {
 	public TrialCandidate applyForTrial(UUID trialId, User user) {
 		Trial trial = trialRepository.findById(trialId)
 			.orElseThrow(() -> new RessourceNotFoundException("Trial", "id", trialId));
-		Player player = user.getPlayer();
-		if (player == null) {
+		if (!(user instanceof Player player)) {
 			throw new IllegalStateException("User is not a player");
 		}
-		if (trialCandidateRepository.findByTrialTrialIdAndPlayerPlayerId(trialId, player.getPlayerId()).isPresent()) {
+		if (trialCandidateRepository.findByTrialTrialIdAndPlayerUserId(trialId, player.getPlayerId()).isPresent()) {
 			throw new IllegalStateException("Already applied to this trial");
 		}
 		TrialCandidate candidate = new TrialCandidate();
@@ -104,9 +99,7 @@ public class TrialService {
 		log.info("[applyForTrial] teamId={} teamName={}", team.getTeamId(), team.getTeamName());
 		User manager = team.getUser();
 		if (manager == null) {
-			manager = userRepository.findByPlayerTeamAndRole(team.getTeamId(), Role.TEAM_MANAGER).orElse(null);
-			log.info("[applyForTrial] team.getUser() was null, fallback lookup => manager={}",
-					manager != null ? manager.getUserId() : "NOT FOUND");
+			log.warn("[applyForTrial] team.getUser() was null, no manager found for team={}", team.getTeamId());
 		}
 		else {
 			log.info("[applyForTrial] manager={}", manager.getUserId());
@@ -128,14 +121,13 @@ public class TrialService {
 
 	@Transactional
 	public void withdrawApplication(UUID trialId, User user) {
-		Player player = user.getPlayer();
-		if (player == null) {
+		if (!(user instanceof Player player)) {
 			throw new IllegalStateException("User is not a player");
 		}
 		Trial trial = trialRepository.findById(trialId)
 			.orElseThrow(() -> new RessourceNotFoundException("Trial", "id", trialId));
 		TrialCandidate candidate = trialCandidateRepository
-			.findByTrialTrialIdAndPlayerPlayerId(trialId, player.getPlayerId())
+			.findByTrialTrialIdAndPlayerUserId(trialId, player.getPlayerId())
 			.orElseThrow(() -> new RessourceNotFoundException("Application", "trial", trialId));
 		if (candidate.getStatus() != TrialApplicationStatus.PENDING
 				&& candidate.getStatus() != TrialApplicationStatus.SHORTLISTED) {
@@ -147,9 +139,6 @@ public class TrialService {
 		// Notify the team manager
 		Team team = trial.getTeam();
 		User manager = team.getUser();
-		if (manager == null) {
-			manager = userRepository.findByPlayerTeamAndRole(team.getTeamId(), Role.TEAM_MANAGER).orElse(null);
-		}
 		if (manager != null) {
 			String playerName = player.getFirstName() + " " + player.getLastName();
 			notificationService.createWithdrawalNotification(manager, playerName, trial.getLocation(),
@@ -185,7 +174,7 @@ public class TrialService {
 
 		// Notify the player about the status change (only when status actually changes)
 		if (!newStatus.equals(previousStatus)) {
-			User playerUser = userRepository.findByPlayerId(candidate.getPlayer().getPlayerId()).orElse(null);
+			Player playerUser = candidate.getPlayer();
 			if (playerUser != null) {
 				String trimmedMessage = (message != null && !message.isBlank()) ? message.trim() : null;
 				notificationService.createStatusChangeNotification(playerUser, trial.getLocation(),
@@ -213,11 +202,10 @@ public class TrialService {
 	}
 
 	public List<PlayerApplicationSummaryDto> getMyApplications(User user) {
-		Player player = user.getPlayer();
-		if (player == null) {
+		if (!(user instanceof Player player)) {
 			throw new IllegalStateException("User is not a player");
 		}
-		return trialCandidateRepository.findByPlayerPlayerId(player.getPlayerId())
+		return trialCandidateRepository.findByPlayerUserId(player.getPlayerId())
 			.stream()
 			.map(c -> new PlayerApplicationSummaryDto(c.getTrial().getTrialId(), c.getCandidateId(), c.getStatus(),
 					c.getAppliedAt(), c.getStatusUpdatedAt()))

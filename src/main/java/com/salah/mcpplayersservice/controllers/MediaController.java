@@ -4,6 +4,7 @@ import com.salah.mcpplayersservice.dto.response.ErrorResponseDto;
 import com.salah.mcpplayersservice.dto.response.MediaResponseDto;
 import com.salah.mcpplayersservice.dto.response.MediaViewResponseDto;
 import com.salah.mcpplayersservice.models.Media;
+import com.salah.mcpplayersservice.models.Player;
 import com.salah.mcpplayersservice.models.User;
 import com.salah.mcpplayersservice.repository.UserRepository;
 import com.salah.mcpplayersservice.services.FileStorageService;
@@ -61,12 +62,12 @@ public class MediaController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
-		if (user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
 		com.salah.mcpplayersservice.models.MediaType type = com.salah.mcpplayersservice.models.MediaType
 			.valueOf(mediaType.toUpperCase());
-		MediaResponseDto response = mediaService.uploadMedia(file, title, description, type, user.getPlayer());
+		MediaResponseDto response = mediaService.uploadMedia(file, title, description, type, player);
 		return ResponseEntity.ok(response);
 	}
 
@@ -78,10 +79,10 @@ public class MediaController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
-		if (user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
-		return ResponseEntity.ok(mediaService.getMyMedia(user.getPlayer().getPlayerId()));
+		return ResponseEntity.ok(mediaService.getMyMedia(player.getPlayerId()));
 	}
 
 	@Operation(summary = "Get media by ID", description = "Returns a single media item")
@@ -108,10 +109,10 @@ public class MediaController {
 		if (user == null) {
 			return ResponseEntity.status(401).build();
 		}
-		if (user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).build();
 		}
-		mediaService.deleteMedia(id, user.getPlayer().getPlayerId());
+		mediaService.deleteMedia(id, player.getPlayerId());
 		return ResponseEntity.noContent().build();
 	}
 
@@ -140,19 +141,12 @@ public class MediaController {
 			return null;
 		}
 
-		String userName;
 		Object principal = authentication.getPrincipal();
 		if (principal instanceof User userPrincipal) {
 			return userPrincipal;
 		}
-		if (principal instanceof UserDetails userDetails) {
-			userName = userDetails.getUsername();
-		}
-		else {
-			userName = principal.toString();
-		}
-
-		return userRepository.findByUserNameWithPlayer(userName).orElse(null);
+		String userName = principal instanceof UserDetails ud ? ud.getUsername() : principal.toString();
+		return userRepository.findByUserName(userName).orElse(null);
 	}
 
 }

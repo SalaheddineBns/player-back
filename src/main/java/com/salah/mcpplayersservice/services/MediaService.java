@@ -52,7 +52,7 @@ public class MediaService {
 	}
 
 	public List<MediaResponseDto> getMyMedia(UUID playerId) {
-		List<Media> mediaList = mediaRepository.findByPlayerPlayerIdOrderByUploadDateDesc(playerId);
+		List<Media> mediaList = mediaRepository.findByPlayerUserIdOrderByUploadDateDesc(playerId);
 		return mediaList.stream()
 			.map(media -> mediaMapper.toMediaResponseDto(media,
 					mediaViewRepository.countByMediaMediaId(media.getMediaId())))

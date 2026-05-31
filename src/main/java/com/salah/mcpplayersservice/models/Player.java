@@ -1,9 +1,8 @@
 package com.salah.mcpplayersservice.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.UuidGenerator;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,22 +10,14 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "players")
-@Data
-@Builder
+@DiscriminatorValue("PLAYER")
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class Player {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@UuidGenerator
-	private UUID playerId;
-
-	@NotBlank(message = "First name cannot be empty")
-	private String firstName;
-
-	@NotBlank(message = "Last name cannot be empty")
-	private String lastName;
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public class Player extends User {
 
 	private String position;
 
@@ -40,7 +31,6 @@ public class Player {
 
 	private Integer preferredNumber;
 
-	/** Player competitive level, e.g. Amateur, Semi-Pro, Professional, Youth, Academy */
 	private String level;
 
 	@Enumerated(EnumType.STRING)
@@ -52,16 +42,24 @@ public class Player {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "team_id")
+	@ToString.Exclude
+	@EqualsAndHashCode.Exclude
 	private Team team;
 
 	@OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
+	@Builder.Default
 	private List<Media> mediaItems = new ArrayList<>();
 
-	@OneToOne(mappedBy = "player", fetch = FetchType.LAZY)
-	@ToString.Exclude
-	@EqualsAndHashCode.Exclude
-	private User user;
+	/** Alias so existing code using playerId still compiles. */
+	public UUID getPlayerId() {
+		return getUserId();
+	}
+
+	@Override
+	public Team getTeam() {
+		return team;
+	}
 
 }

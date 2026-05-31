@@ -4,10 +4,12 @@ import com.salah.mcpplayersservice.dto.request.LoginRequest;
 import com.salah.mcpplayersservice.dto.request.SignupRequest;
 import com.salah.mcpplayersservice.dto.response.AuthResponseDto;
 import com.salah.mcpplayersservice.exceptions.UserAlreadyExistsException;
+import com.salah.mcpplayersservice.models.Manager;
 import com.salah.mcpplayersservice.models.Player;
 import com.salah.mcpplayersservice.models.Role;
 import com.salah.mcpplayersservice.models.Team;
 import com.salah.mcpplayersservice.models.User;
+import com.salah.mcpplayersservice.repository.ManagerRepository;
 import com.salah.mcpplayersservice.repository.PlayerRepository;
 import com.salah.mcpplayersservice.repository.TeamRepository;
 import com.salah.mcpplayersservice.repository.UserRepository;
@@ -28,6 +30,8 @@ public class AuthService {
 
 	private final PlayerRepository playerRepository;
 
+	private final ManagerRepository managerRepository;
+
 	private final TeamRepository teamRepository;
 
 	private final PasswordEncoder passwordEncoder;
@@ -36,10 +40,12 @@ public class AuthService {
 
 	private final JwtUtil jwtUtil;
 
-	public AuthService(UserRepository userRepository, PlayerRepository playerRepository, TeamRepository teamRepository,
-			PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+	public AuthService(UserRepository userRepository, PlayerRepository playerRepository,
+			ManagerRepository managerRepository, TeamRepository teamRepository, PasswordEncoder passwordEncoder,
+			AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
 		this.userRepository = userRepository;
 		this.playerRepository = playerRepository;
+		this.managerRepository = managerRepository;
 		this.teamRepository = teamRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.authenticationManager = authenticationManager;
@@ -54,79 +60,55 @@ public class AuthService {
 		if (userRepository.existsByUserName(request.userName())) {
 			throw new UserAlreadyExistsException("A user with this username already exists");
 		}
-
-		boolean isTeamManager = "TEAM_MANAGER".equals(request.role());
-
-		if (isTeamManager) {
+		if ("TEAM_MANAGER".equals(request.role())) {
 			return signupTeamManager(request);
 		}
 		return signupPlayer(request);
 	}
 
-	private User signupPlayer(SignupRequest request) {
+	private Player signupPlayer(SignupRequest request) {
 		Player player = Player.builder()
-			.firstName(request.firstName())
-			.lastName(request.lastName())
-			.gender(request.gender())
-			.build();
-		player = playerRepository.save(player);
-
-		User user = User.builder()
 			.userName(request.userName())
 			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.role(Role.PLAYER)
-			.player(player)
+			.firstName(request.firstName())
+			.lastName(request.lastName())
+			.gender(request.gender())
 			.build();
-		user = userRepository.save(user);
-
-		player.setUser(user);
-
-		return user;
+		return playerRepository.save(player);
 	}
 
-	private User signupTeamManager(SignupRequest request) {
+	private Manager signupTeamManager(SignupRequest request) {
 		String teamName = request.teamName();
 		if (teamName == null || teamName.isBlank()) {
 			throw new IllegalArgumentException("Team name is required for team manager signup");
 		}
 
-		Player player = Player.builder()
-			.firstName(request.firstName())
-			.lastName(request.lastName())
-			.gender(request.gender())
-			.build();
-		player = playerRepository.save(player);
-
-		User user = User.builder()
+		Manager manager = Manager.builder()
 			.userName(request.userName())
 			.email(request.email())
 			.password(passwordEncoder.encode(request.password()))
 			.role(Role.TEAM_MANAGER)
-			.player(player)
+			.firstName(request.firstName())
+			.lastName(request.lastName())
 			.build();
-		user = userRepository.save(user);
-
-		player.setUser(user);
+		manager = managerRepository.save(manager);
 
 		Team team = new Team();
 		team.setTeamName(teamName);
 		team.setCoach(request.firstName() + " " + request.lastName());
 		team.setDivision(request.division());
 		team.setDateCreated(new Date());
-		team.setUser(user);
-		team = teamRepository.save(team);
+		team.setUser(manager);
+		teamRepository.save(team);
 
-		player.setTeam(team);
-		playerRepository.save(player);
-
-		return user;
+		return manager;
 	}
 
 	public AuthResponseDto login(LoginRequest request) {
 		Authentication authentication = authenticationManager
 			.authenticate(new UsernamePasswordAuthenticationToken(request.userName(), request.password()));
-
 		User user = (User) authentication.getPrincipal();
 		String token = jwtUtil.generateToken(user);
 		return new AuthResponseDto(token, user.getRole().name(), "Login successful");

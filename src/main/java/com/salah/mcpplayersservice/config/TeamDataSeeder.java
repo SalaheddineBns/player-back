@@ -1,10 +1,9 @@
 package com.salah.mcpplayersservice.config;
 
-import com.salah.mcpplayersservice.models.Player;
+import com.salah.mcpplayersservice.models.Manager;
 import com.salah.mcpplayersservice.models.Role;
 import com.salah.mcpplayersservice.models.Team;
-import com.salah.mcpplayersservice.models.User;
-import com.salah.mcpplayersservice.repository.PlayerRepository;
+import com.salah.mcpplayersservice.repository.ManagerRepository;
 import com.salah.mcpplayersservice.repository.TeamRepository;
 import com.salah.mcpplayersservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,7 @@ public class TeamDataSeeder implements CommandLineRunner {
 
 	private final TeamRepository teamRepository;
 
-	private final PlayerRepository playerRepository;
+	private final ManagerRepository managerRepository;
 
 	private final UserRepository userRepository;
 
@@ -43,60 +42,59 @@ public class TeamDataSeeder implements CommandLineRunner {
 			if (existing.isPresent()) {
 				Team team = existing.get();
 				if (team.getUser() == null) {
-					linkUserToExistingTeam(team, coach);
+					linkManagerToExistingTeam(team, coach);
 				}
 			}
 			else {
-				createTeamWithUser(teamName, coach);
+				createTeamWithManager(teamName, coach);
 			}
 		}
 	}
 
-	private User createUserAndPlayer(String teamName, String coach) {
+	private Manager createManager(String teamName, String coach) {
 		String[] coachParts = coach.split(" ", 2);
 		String firstName = coachParts[0];
 		String lastName = coachParts.length > 1 ? coachParts[1] : firstName;
-
-		Player player = Player.builder().firstName(firstName).lastName(lastName).build();
-		player = playerRepository.save(player);
-
 		String username = teamName.replaceAll("\\s+", "").toLowerCase();
 
-		User user = User.builder()
+		// Skip if user already exists
+		if (userRepository.existsByUserName(username)) {
+			return null;
+		}
+
+		Manager manager = Manager.builder()
 			.userName(username)
 			.email(username + "@team.com")
 			.password(passwordEncoder.encode("password123"))
 			.role(Role.TEAM_MANAGER)
-			.player(player)
+			.firstName(firstName)
+			.lastName(lastName)
 			.build();
-		user = userRepository.save(user);
-
-		player.setUser(user);
-		return user;
+		return managerRepository.save(manager);
 	}
 
-	private void createTeamWithUser(String teamName, String coach) {
-		User user = createUserAndPlayer(teamName, coach);
+	private void createTeamWithManager(String teamName, String coach) {
+		Manager manager = createManager(teamName, coach);
+		if (manager == null) {
+			return;
+		}
 
 		Team team = new Team();
 		team.setTeamName(teamName);
 		team.setCoach(coach);
 		team.setDateCreated(new Date());
-		team.setUser(user);
-		team = teamRepository.save(team);
-
-		user.getPlayer().setTeam(team);
-		playerRepository.save(user.getPlayer());
+		team.setUser(manager);
+		teamRepository.save(team);
 	}
 
-	private void linkUserToExistingTeam(Team team, String coach) {
-		User user = createUserAndPlayer(team.getTeamName(), coach);
+	private void linkManagerToExistingTeam(Team team, String coach) {
+		Manager manager = createManager(team.getTeamName(), coach);
+		if (manager == null) {
+			return;
+		}
 
-		team.setUser(user);
+		team.setUser(manager);
 		teamRepository.save(team);
-
-		user.getPlayer().setTeam(team);
-		playerRepository.save(user.getPlayer());
 	}
 
 }

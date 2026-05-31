@@ -99,7 +99,7 @@ class TeamServiceTest {
 
 	@Test
 	void subscribe_successfully() {
-		Player player = Player.builder().playerId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
+		Player player = Player.builder().userId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
 		Team team = new Team();
 		UUID teamId = UUID.randomUUID();
 		team.setTeamId(teamId);
@@ -114,7 +114,7 @@ class TeamServiceTest {
 
 	@Test
 	void subscribe_alreadySubscribed_throwsException() {
-		Player player = Player.builder().playerId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
+		Player player = Player.builder().userId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
 		Team team = new Team();
 		UUID teamId = UUID.randomUUID();
 		team.setTeamId(teamId);
@@ -128,7 +128,7 @@ class TeamServiceTest {
 
 	@Test
 	void unsubscribe_successfully() {
-		Player player = Player.builder().playerId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
+		Player player = Player.builder().userId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
 		Team team = new Team();
 		UUID teamId = UUID.randomUUID();
 		team.setTeamId(teamId);
@@ -144,7 +144,7 @@ class TeamServiceTest {
 
 	@Test
 	void unsubscribe_notSubscribed_throwsException() {
-		Player player = Player.builder().playerId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
+		Player player = Player.builder().userId(UUID.randomUUID()).firstName("John").lastName("Doe").build();
 		Team team = new Team();
 		UUID teamId = UUID.randomUUID();
 		team.setTeamId(teamId);

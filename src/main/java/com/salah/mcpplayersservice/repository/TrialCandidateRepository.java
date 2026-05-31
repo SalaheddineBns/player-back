@@ -8,10 +8,10 @@ import java.util.UUID;
 
 public interface TrialCandidateRepository extends JpaRepository<TrialCandidate, UUID> {
 
-	Optional<TrialCandidate> findByTrialTrialIdAndPlayerPlayerId(UUID trialId, UUID playerId);
+	Optional<TrialCandidate> findByTrialTrialIdAndPlayerUserId(UUID trialId, UUID playerId);
 
 	List<TrialCandidate> findByTrialTrialId(UUID trialId);
 
-	List<TrialCandidate> findByPlayerPlayerId(UUID playerId);
+	List<TrialCandidate> findByPlayerUserId(UUID playerId);
 
 }

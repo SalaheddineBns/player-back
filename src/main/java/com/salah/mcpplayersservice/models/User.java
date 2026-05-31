@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,15 +17,20 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
-@Data
-@Builder
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "dtype", discriminatorType = DiscriminatorType.STRING)
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class User implements UserDetails {
+@SuperBuilder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
+public abstract class User implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@UuidGenerator
+	@EqualsAndHashCode.Include
 	private UUID userId;
 
 	@NotBlank(message = "Username cannot be empty")
@@ -44,11 +50,19 @@ public class User implements UserDetails {
 	@Column(nullable = false)
 	private Role role;
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "player_id", referencedColumnName = "playerId")
+	@NotBlank(message = "First name cannot be empty")
+	private String firstName;
+
+	@NotBlank(message = "Last name cannot be empty")
+	private String lastName;
+
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
 	@ToString.Exclude
-	@EqualsAndHashCode.Exclude
-	private Player player;
+	private Team managedTeam;
+
+	public Team getTeam() {
+		return managedTeam;
+	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -58,10 +72,6 @@ public class User implements UserDetails {
 	@Override
 	public String getUsername() {
 		return this.userName;
-	}
-
-	public Team getTeam() {
-		return player != null ? player.getTeam() : null;
 	}
 
 }

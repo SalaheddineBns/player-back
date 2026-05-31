@@ -3,6 +3,7 @@ package com.salah.mcpplayersservice.controllers;
 import com.salah.mcpplayersservice.dto.request.TeamUpdateRequest;
 import com.salah.mcpplayersservice.dto.response.TeamOptionResponseDto;
 import com.salah.mcpplayersservice.dto.response.TeamPageResponseDto;
+import com.salah.mcpplayersservice.models.Player;
 import com.salah.mcpplayersservice.models.Team;
 import com.salah.mcpplayersservice.models.User;
 import com.salah.mcpplayersservice.repository.TeamRepository;
@@ -11,13 +12,12 @@ import com.salah.mcpplayersservice.services.TeamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,7 +35,6 @@ import java.util.UUID;
 @RequestMapping("/api/teams")
 @Tag(name = "Teams", description = "Team endpoints")
 @SecurityRequirement(name = "bearerAuth")
-@RequiredArgsConstructor
 public class TeamController {
 
 	private final TeamService teamService;
@@ -46,6 +45,12 @@ public class TeamController {
 
 	@Value("${media.upload-dir}")
 	private String uploadDir;
+
+	public TeamController(TeamService teamService, TeamRepository teamRepository, UserRepository userRepository) {
+		this.teamService = teamService;
+		this.teamRepository = teamRepository;
+		this.userRepository = userRepository;
+	}
 
 	@Operation(summary = "Get all teams", description = "Returns all teams for profile dropdown selection")
 	@GetMapping
@@ -74,11 +79,11 @@ public class TeamController {
 	@PostMapping("/{teamId}/subscribe")
 	public ResponseEntity<?> subscribe(Authentication authentication, @PathVariable UUID teamId) {
 		User user = resolveUser(authentication);
-		if (user == null || user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).body(Map.of("message", "Only players can subscribe to teams"));
 		}
 		try {
-			teamService.subscribe(user.getPlayer(), teamId);
+			teamService.subscribe(player, teamId);
 			return ResponseEntity.ok(Map.of("message", "Subscribed successfully"));
 		}
 		catch (IllegalStateException ex) {
@@ -90,11 +95,11 @@ public class TeamController {
 	@DeleteMapping("/{teamId}/subscribe")
 	public ResponseEntity<?> unsubscribe(Authentication authentication, @PathVariable UUID teamId) {
 		User user = resolveUser(authentication);
-		if (user == null || user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).body(Map.of("message", "Only players can unsubscribe from teams"));
 		}
 		try {
-			teamService.unsubscribe(user.getPlayer(), teamId);
+			teamService.unsubscribe(player, teamId);
 			return ResponseEntity.ok(Map.of("message", "Unsubscribed successfully"));
 		}
 		catch (IllegalStateException ex) {
@@ -107,10 +112,10 @@ public class TeamController {
 	@GetMapping("/subscriptions")
 	public ResponseEntity<?> getSubscriptions(Authentication authentication) {
 		User user = resolveUser(authentication);
-		if (user == null || user.getPlayer() == null) {
+		if (!(user instanceof Player player)) {
 			return ResponseEntity.status(403).body(Map.of("message", "Only players can view subscriptions"));
 		}
-		Set<UUID> teamIds = teamService.getSubscribedTeamIds(user.getPlayer());
+		Set<UUID> teamIds = teamService.getSubscribedTeamIds(player);
 		return ResponseEntity.ok(teamIds);
 	}
 
@@ -190,7 +195,6 @@ public class TeamController {
 
 		try {
 			Path uploadPath = Paths.get(uploadDir, "logos");
-			// Find the file matching team-{id}.*
 			Path logoFile = Files.list(uploadPath)
 				.filter(p -> p.getFileName().toString().startsWith("team-" + teamId))
 				.findFirst()
@@ -201,13 +205,13 @@ public class TeamController {
 			}
 
 			byte[] bytes = Files.readAllBytes(logoFile);
-			String contentType = Files.probeContentType(logoFile);
-			if (contentType == null) {
-				contentType = "image/png";
+			String type = Files.probeContentType(logoFile);
+			if (type == null) {
+				type = "image/png";
 			}
 
 			return ResponseEntity.ok()
-				.header("Content-Type", contentType)
+				.header("Content-Type", type)
 				.header("Cache-Control", "max-age=86400")
 				.body(bytes);
 		}
@@ -229,14 +233,10 @@ public class TeamController {
 			return null;
 		}
 		Object principal = authentication.getPrincipal();
-		String userName;
-		if (principal instanceof UserDetails userDetails) {
-			userName = userDetails.getUsername();
-		}
-		else {
-			userName = principal.toString();
-		}
-		return userRepository.findByUserNameWithPlayer(userName).orElse(null);
+		if (principal instanceof User u)
+			return u;
+		String userName = principal instanceof UserDetails ud ? ud.getUsername() : principal.toString();
+		return userRepository.findByUserName(userName).orElse(null);
 	}
 
 }

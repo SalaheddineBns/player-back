@@ -47,8 +47,7 @@ public class MessageService {
 
 	@Transactional
 	public Message sendMessage(User sender, UUID receiverId, String content) {
-		User receiver = userRepository.findByPlayerId(receiverId)
-			.or(() -> userRepository.findById(receiverId))
+		User receiver = userRepository.findById(receiverId)
 			.orElseThrow(() -> new RessourceNotFoundException("User", "id", receiverId));
 
 		Conversation conversation = getOrCreateConversation(sender, receiver);
