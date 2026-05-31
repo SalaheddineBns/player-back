@@ -72,12 +72,7 @@ public class TeamController {
 			@RequestParam(value = "country", defaultValue = "") String country,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "10") int size) {
-		if (country.isBlank()) {
-			User user = resolveUser(authentication);
-			if (user instanceof Player player && player.getNationality() != null) {
-				country = player.getNationality();
-			}
-		}
+
 		return ResponseEntity.ok(teamService.searchTeams(query, city, country, page, size));
 	}
 

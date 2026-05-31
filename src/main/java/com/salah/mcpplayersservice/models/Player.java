@@ -40,7 +40,7 @@ public class Player extends User {
 
 	private String profilePictureUrl;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "team_id")
 	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
