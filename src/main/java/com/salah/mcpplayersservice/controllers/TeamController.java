@@ -60,7 +60,7 @@ public class TeamController {
 	}
 
 	@Operation(summary = "Get team page", description = "Returns team details with publications")
-	@GetMapping("/{teamId}")
+	@GetMapping("/{teamId:[0-9a-fA-F\\-]{36}}")
 	public ResponseEntity<TeamPageResponseDto> getTeamPage(@PathVariable UUID teamId) {
 		return ResponseEntity.ok(teamService.getTeamPage(teamId));
 	}
@@ -84,7 +84,7 @@ public class TeamController {
 	}
 
 	@Operation(summary = "Subscribe to a team", description = "Subscribes the current player to a team")
-	@PostMapping("/{teamId}/subscribe")
+	@PostMapping("/{teamId:[0-9a-fA-F\\-]{36}}/subscribe")
 	public ResponseEntity<?> subscribe(Authentication authentication, @PathVariable UUID teamId) {
 		User user = resolveUser(authentication);
 		if (!(user instanceof Player player)) {
@@ -100,7 +100,7 @@ public class TeamController {
 	}
 
 	@Operation(summary = "Unsubscribe from a team", description = "Unsubscribes the current player from a team")
-	@DeleteMapping("/{teamId}/subscribe")
+	@DeleteMapping("/{teamId:[0-9a-fA-F\\-]{36}}/subscribe")
 	public ResponseEntity<?> unsubscribe(Authentication authentication, @PathVariable UUID teamId) {
 		User user = resolveUser(authentication);
 		if (!(user instanceof Player player)) {
@@ -194,7 +194,7 @@ public class TeamController {
 		}
 	}
 
-	@GetMapping("/{teamId}/logo")
+	@GetMapping("/{teamId:[0-9a-fA-F\\-]{36}}/logo")
 	public ResponseEntity<byte[]> getTeamLogo(@PathVariable UUID teamId) {
 		Team team = teamRepository.findById(teamId).orElse(null);
 		if (team == null || team.getLogoUrl() == null) {
