@@ -50,8 +50,8 @@ public class SecurityConfig {
 			.csrf(csrf -> csrf.disable())
 			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/auth/**", "/api/media/*/file", "/api/teams/*/logo", "/swagger-ui/**",
-						"/v3/api-docs/**", "/swagger-ui.html", "/ws/**", "/error")
+				.requestMatchers("/api/auth/**", "/api/media/*/file", "/api/teams/*/logo", "/api/subscriptions/plans",
+						"/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/ws/**", "/error")
 				.permitAll()
 				.anyRequest()
 				.authenticated())
